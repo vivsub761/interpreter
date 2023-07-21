@@ -97,18 +97,21 @@ public class Lexer {
                 } else {
                     addToken(TokenType.SLASH, "/", null);
                 }
+                break;
             case '&':
                 if (checkNext('&')) {
                     addToken(TokenType.AND, "&&", null);
                 } else {
                     addToken(TokenType.LOGICAL_AND, "&", null);
                 }
+                break;
             case '|':
                 if (checkNext('|')) {
                     addToken(TokenType.OR, "||", null);
                 } else {
                     addToken(TokenType.LOGICAL_OR, "|", null);
                 }
+                break;
             case ' ':
             case '\t':
             case '\r':
