@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Lexer {
     private final String fileData;
@@ -8,6 +10,24 @@ public class Lexer {
     private int curr = 0;
 
     private int line;
+
+    private static final Map<String, TokenType> keywordMap;
+    static {
+        keywordMap = new HashMap<>();
+        keywordMap.put("else",   TokenType.ELSE);
+        keywordMap.put("false",  TokenType.FALSE);
+        keywordMap.put("for",    TokenType.FOR);
+        keywordMap.put("def",    TokenType.DEF);
+        keywordMap.put("if",     TokenType.IF);
+        keywordMap.put("nil",    TokenType.NULL);
+        keywordMap.put("print",  TokenType.PRINT);
+        keywordMap.put("return", TokenType.RETURN);
+        keywordMap.put("true",   TokenType.TRUE);
+        keywordMap.put("var",    TokenType.VAR);
+        keywordMap.put("while",  TokenType.WHILE);
+        keywordMap.put("elif", TokenType.ELIF);
+    }
+
     Lexer(String fileData) {
         this.fileData = fileData;
         this.tokens = new ArrayList<>();
@@ -32,13 +52,14 @@ public class Lexer {
             case '(': addToken(TokenType.LEFT_P, "(", null); break;
             case ')': addToken(TokenType.RIGHT_P, ")", null); break;
             case ',': addToken(TokenType.COMMA, ",", null); break;
-            case '.': addToken(TokenType.COMMA, ".", null); break;
+            case '.': addToken(TokenType.DOT, ".", null); break;
             case '{': addToken(TokenType.LEFT_B, "{", null); break;
             case '}': addToken(TokenType.RIGHT_B, "}", null); break;
             case '+': addToken(TokenType.PLUS, "+", null); break;
             case '-': addToken(TokenType.MINUS, "-", null); break;
             case ';': addToken(TokenType.SEMICOLON, ";", null); break;
             case '*': addToken(TokenType.STAR, "*", null); break;
+
 
             //Multi-char tokens
 
@@ -75,6 +96,18 @@ public class Lexer {
                     addToken(TokenType.DOUBLE_SLASH, "//", null);
                 } else {
                     addToken(TokenType.SLASH, "/", null);
+                }
+            case '&':
+                if (checkNext('&')) {
+                    addToken(TokenType.AND, "&&", null);
+                } else {
+                    addToken(TokenType.LOGICAL_AND, "&", null);
+                }
+            case '|':
+                if (checkNext('|')) {
+                    addToken(TokenType.OR, "||", null);
+                } else {
+                    addToken(TokenType.LOGICAL_OR, "|", null);
                 }
             case ' ':
             case '\t':
@@ -147,6 +180,18 @@ public class Lexer {
     }
 
     private void keyword() {
+        char c = this.fileData.charAt(this.curr);
+        StringBuilder strBuilder = new StringBuilder();
+        while (Character.isLetter(c) || Character.isDigit(c) || c == '_') {
+            strBuilder.append(c);
+            c = this.fileData.charAt(++this.curr);
+        }
+        String s = strBuilder.toString();
+        if (keywordMap.containsKey(s)) {
+            addToken(keywordMap.get(s), s, null);
+        } else {
+            addToken(TokenType.IDENTIFIER, s, null);
+        }
 
     }
 }

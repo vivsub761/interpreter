@@ -20,7 +20,7 @@ public class Interpreter {
         List<Token> tokens = lexer.getTokens();
 
         for (Token token: tokens) {
-            System.out.println(token);
+            System.out.println(token.type);
         }
     }
     public static void error(int lineNumber, String errorMessage) {
