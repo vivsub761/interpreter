@@ -160,10 +160,10 @@ public class Lexer {
             strBuilder.append(this.fileData.charAt(this.curr));
             this.curr++;
         }
-        this.curr++;
         if (this.curr >= this.fileData.length()) {
             Interpreter.error(this.line, "String not terminated");
         }
+        this.curr++;
         addToken(TokenType.STRING, this.fileData.substring(this.currTokenStart, this.curr), strBuilder.toString());
     }
 
