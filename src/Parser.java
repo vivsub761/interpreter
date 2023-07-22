@@ -1,3 +1,4 @@
+import java.text.ParseException;
 import java.util.List;
 
 public class Parser {
@@ -17,7 +18,7 @@ public class Parser {
             return left;
         }
         Token curr = this.tokens.get(this.currToken);
-        while (curr.type == TokenType.DOUBLE_EQUAL || curr.type == TokenType.EXCLAMATIONEQUALS ) {
+        while (curr.type == TokenType.DOUBLE_EQUAL || curr.type == TokenType.EXCLAMATIONEQUALS) {
             Expr right = comparison();
             left = new Expr.Binary(left, curr, right);
             curr = this.tokens.get(++this.currToken);
@@ -112,5 +113,4 @@ public class Parser {
         }
         return null;
     }
-
 }

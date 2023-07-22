@@ -18,10 +18,15 @@ public class Interpreter {
         byte[] fileData = Files.readAllBytes(Paths.get(filePath));
         Lexer lexer = new Lexer(new String(fileData, Charset.defaultCharset()));
         List<Token> tokens = lexer.getTokens();
+        Parser parser = new Parser(tokens);
+        Expr expression = parser.parse();
+        Evaluator evaluator = new Evaluator();
+        evaluator.evaluate(expression);
+//        for (Token token: tokens) {
+//            System.out.println(token.type);
+//        }
 
-        for (Token token: tokens) {
-            System.out.println(token.type);
-        }
+        System.out.println(new AstPrinter().print(expression));
     }
     public static void error(int lineNumber, String errorMessage) {
         System.out.println("Error in line " + Integer.toString(lineNumber) + ": " + errorMessage);
