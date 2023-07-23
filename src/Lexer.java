@@ -36,7 +36,6 @@ public class Lexer {
 
 
     public void tokenize() {
-        int currTokenStart = 0;
         while (this.curr < this.fileData.length()) {
             this.currTokenStart = this.curr;
             addNextToken();
@@ -168,17 +167,17 @@ public class Lexer {
     }
 
     private void numberLiteral() {
-        while (Character.isDigit(this.fileData.charAt(this.curr))) {
+        while (this.curr < this.fileData.length() && Character.isDigit(this.fileData.charAt(this.curr))) {
             this.curr++;
         }
         if (checkNext('.')) {
             this.curr++;
         }
-        while (Character.isDigit(this.fileData.charAt(this.curr))) {
+        while (this.curr < this.fileData.length() && Character.isDigit(this.fileData.charAt(this.curr))) {
             this.curr++;
         }
         String capturedNum = this.fileData.substring(this.currTokenStart, this.curr);
-        addToken(TokenType.NUM, capturedNum, Double.parseDouble(capturedNum));
+        addToken(TokenType.NUM, capturedNum, Float.parseFloat(capturedNum));
 
     }
 

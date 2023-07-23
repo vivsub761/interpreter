@@ -1,8 +1,17 @@
-public class Evaluator {
+import java.util.List;
+
+public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVisitor<Object>{
+
+    private Environment environment;
+    Evaluator() {
+        this.environment = new Environment();
+    }
+    @Override
     public Object visitLiteral(Expr.Literal expr) {
         return expr.value;
     }
 
+    @Override
     public Object visitUnary(Expr.Unary expr) {
         Object right = eval(expr.right);
 
@@ -16,7 +25,7 @@ public class Evaluator {
         }
         return null;
     }
-
+    @Override
     public Object visitBinary(Expr.Binary expr) {
         Object left = eval(expr.left);
         Object right = eval(expr.right);
@@ -59,32 +68,61 @@ public class Evaluator {
         }
         return null;
     }
-
+    @Override
     public Object visitGrouping(Expr.Grouping expr) {
         return eval(expr.expression);
     }
 
-    private Object eval(Expr expr) {
-        if (expr instanceof Expr.Unary) {
-            return visitUnary((Expr.Unary) expr);
-        } else if (expr instanceof Expr.Binary) {
-            return visitBinary((Expr.Binary) expr);
-        } else if (expr instanceof Expr.Literal) {
-            return visitLiteral((Expr.Literal) expr);
-        } else if (expr instanceof Expr.Grouping) {
-            return visitGrouping((Expr.Grouping) expr);
-        }
-        return "";
+    @Override
+    public Object visitAssignment(Expr.Assignment assignment) {
+        Object value = eval(assignment.value);
+        environment.reassign(assignment.variable.lexeme, value);
+        return value;
+    }
+    @Override
+    public Object visitVariable(Expr.Variable var) {
+        return this.environment.getVal(var.varName.lexeme);
     }
 
-    void evaluate(Expr expr) {
-        Object value = eval(expr);
+//    Statements
+    @Override
+    public Void visitExpression(Statement.Expression statement) {
+        eval(statement.expr);
+        return null;
+    }
+    @Override
+    public Void visitPrint(Statement.Print printStatement) {
+        Object value = eval(printStatement.expr);
         System.out.println(value.toString());
+        return null;
+    }
+    @Override
+    public Void visitVariable(Statement.StatementVar var) {
+        Object value = eval(var.initialVarValue);
+        this.environment.setVariable(var.varName.lexeme, value);
+        return null;
+    }
+
+
+
+
+    private Object eval(Expr expr) {
+        return expr.accept(this);
+    }
+    private void execute(Statement statement) {
+        statement.accept(this);
+    }
+    void evaluate(List<Statement> statements) {
+        for (Statement statement: statements) {
+            execute(statement);
+        }
+//        System.out.println(value.toString());
     }
 
     private boolean validate(Object left, Object right) {
         return ((left instanceof Float) && (right instanceof Float));
     }
+
 
     private boolean validateStrings(Object left, Object right) {
         return ((left instanceof String) && (right instanceof String));

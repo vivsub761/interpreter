@@ -1,3 +1,4 @@
+import javax.swing.plaf.nimbus.State;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -19,14 +20,14 @@ public class Interpreter {
         Lexer lexer = new Lexer(new String(fileData, Charset.defaultCharset()));
         List<Token> tokens = lexer.getTokens();
         Parser parser = new Parser(tokens);
-        Expr expression = parser.parse();
+        List<Statement> statements = parser.parse();
         Evaluator evaluator = new Evaluator();
-        evaluator.evaluate(expression);
+        evaluator.evaluate(statements);
 //        for (Token token: tokens) {
 //            System.out.println(token.type);
 //        }
 
-        System.out.println(new AstPrinter().print(expression));
+//        System.out.println(new AstPrinter().print(expression));
     }
     public static void error(int lineNumber, String errorMessage) {
         System.out.println("Error in line " + Integer.toString(lineNumber) + ": " + errorMessage);

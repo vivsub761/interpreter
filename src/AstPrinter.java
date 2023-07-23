@@ -1,32 +1,32 @@
-class AstPrinter {
+class AstPrinter implements Expr.ExprVisitor<String>{
     String print(Expr expr) {
-        if (expr instanceof Expr.Unary) {
-            return visitUnary((Expr.Unary) expr);
-        } else if (expr instanceof  Expr.Binary) {
-            return visitBinary((Expr.Binary) expr);
-        } else if (expr instanceof Expr.Literal) {
-            return visitLiteral((Expr.Literal) expr);
-        } else if (expr instanceof Expr.Grouping) {
-            return visitGrouping((Expr.Grouping) expr);
-        }
-        return "";
+        return expr.accept(this);
     }
+    @Override
     public String visitBinary(Expr.Binary expr) {
         return parenthesize(expr.operator.lexeme,
                 expr.left, expr.right);
     }
-
+    @Override
+    public String visitVariable(Expr.Variable expr) {
+        return expr.varName.lexeme;
+    }
+    @Override
     public String visitGrouping(Expr.Grouping expr) {
         return parenthesize("group", expr.expression);
     }
-
+    @Override
     public String visitLiteral(Expr.Literal expr) {
         if (expr.value == null) return "null";
         return expr.value.toString();
     }
-
+    @Override
     public String visitUnary(Expr.Unary expr) {
         return parenthesize(expr.operator.lexeme, expr.right);
+    }
+    @Override
+    public String visitAssignment(Expr.Assignment expr) {
+        return parenthesize(expr.variable.lexeme, expr.value);
     }
     private String parenthesize(String name, Expr... exprs) {
         StringBuilder builder = new StringBuilder();
@@ -34,16 +34,7 @@ class AstPrinter {
         builder.append("(").append(name);
         for (Expr expr : exprs) {
             builder.append(" ");
-            if (expr instanceof Expr.Unary) {
-                builder.append(visitUnary((Expr.Unary) expr));
-            } else if (expr instanceof  Expr.Binary) {
-                builder.append(visitBinary((Expr.Binary) expr));
-            } else if (expr instanceof Expr.Literal) {
-                builder.append(visitLiteral((Expr.Literal) expr));
-            } else if (expr instanceof Expr.Grouping) {
-                builder.append(visitGrouping((Expr.Grouping) expr));
-            }
-//            builder.append(expr.accept(this));
+            builder.append(expr.accept(this));
         }
         builder.append(")");
 
