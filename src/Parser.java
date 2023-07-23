@@ -44,12 +44,27 @@ public class Parser {
             semicolonCheck();
             return new Statement.StatementVar(name, initialVal);
 
+        } else if (curr.type == TokenType.LEFT_B){
+            this.currToken++;
+            return new Statement.EnvBlock(block());
         } else {
             Expr expr = assignment();
             semicolonCheck();
             return new Statement.Expression(expr);
 
         }
+    }
+
+    private List<Statement> block() {
+        List<Statement> statements = new ArrayList<>();
+        while (this.currToken < this.tokens.size() && getCurrToken().type != TokenType.RIGHT_B) {
+            statements.add(getNextStatement());
+        }
+        if (this.currToken >= this.tokens.size() || getCurrToken().type != TokenType.RIGHT_B) {
+            Interpreter.error(3, "Missing right bracket");
+        }
+        this.currToken++;
+        return statements;
     }
 
     private void semicolonCheck() {

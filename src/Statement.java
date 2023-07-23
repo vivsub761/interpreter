@@ -1,3 +1,6 @@
+import javax.swing.plaf.nimbus.State;
+import java.util.List;
+
 abstract class Statement {
 
     interface StatementVisitor<R> {
@@ -5,6 +8,7 @@ abstract class Statement {
         R visitExpression(Expression statement);
 
         R visitVariable(StatementVar variable);
+        R visitEnvBlock(EnvBlock block);
     }
     abstract <R> R accept(Statement.StatementVisitor<R> visitor);
     static class Expression extends Statement {
@@ -41,6 +45,19 @@ abstract class Statement {
         @Override
         <R> R accept(Statement.StatementVisitor<R> visitor) {
             return visitor.visitVariable(this);
+        }
+    }
+
+    static class EnvBlock extends Statement {
+        List<Statement> statements;
+
+        EnvBlock(List<Statement> statements) {
+            this.statements = statements;
+        }
+
+        @Override
+        <R> R accept(Statement.StatementVisitor<R> visitor) {
+            return visitor.visitEnvBlock(this);
         }
     }
 }

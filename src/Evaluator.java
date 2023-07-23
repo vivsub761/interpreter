@@ -4,13 +4,12 @@ public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVis
 
     private Environment environment;
     Evaluator() {
-        this.environment = new Environment();
+        this.environment = new Environment(null);
     }
     @Override
     public Object visitLiteral(Expr.Literal expr) {
         return expr.value;
     }
-
     @Override
     public Object visitUnary(Expr.Unary expr) {
         Object right = eval(expr.right);
@@ -100,6 +99,17 @@ public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVis
     public Void visitVariable(Statement.StatementVar var) {
         Object value = eval(var.initialVarValue);
         this.environment.setVariable(var.varName.lexeme, value);
+        return null;
+    }
+    @Override
+    public Void visitEnvBlock(Statement.EnvBlock block) {
+        Environment blockEnv = new Environment(this.environment);
+        Environment prev = this.environment;
+        this.environment = blockEnv;
+        for (Statement statement : block.statements) {
+            execute(statement);
+        }
+        this.environment = prev;
         return null;
     }
 
