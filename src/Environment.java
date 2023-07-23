@@ -18,8 +18,9 @@ public class Environment {
             setVariable(varName, value);
         } else if (this.parentEnv != null){
             this.parentEnv.reassign(varName, value);
+        } else {
+            Interpreter.error(1, "Invalid assignment");
         }
-        Interpreter.error(1, "Invalid assignment");
     }
 
     Object getVal(String varName) {
