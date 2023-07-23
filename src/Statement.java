@@ -10,6 +10,7 @@ abstract class Statement {
         R visitVariable(StatementVar variable);
         R visitEnvBlock(EnvBlock block);
         R visitWhileStatement(WhileStatement statement);
+        R visitForStatement(ForStatement statement);
     }
     abstract <R> R accept(Statement.StatementVisitor<R> visitor);
     static class Expression extends Statement {
@@ -90,6 +91,25 @@ abstract class Statement {
         @Override
         <R> R accept(Statement.StatementVisitor<R> visitor) {
             return visitor.visitWhileStatement(this);
+        }
+    }
+
+    static class ForStatement extends Statement {
+        Expr condition;
+        Statement forBlock;
+        Statement varDeclaration;
+        Expr incrementation;
+
+        ForStatement(Expr condition, Statement forBlock, Statement varDeclaration, Expr incrementation) {
+            this.condition = condition;
+            this.forBlock = forBlock;
+            this.varDeclaration = varDeclaration;
+            this.incrementation = incrementation;
+        }
+
+        @Override
+        <R> R accept(Statement.StatementVisitor<R> visitor) {
+            return visitor.visitForStatement(this);
         }
     }
 }

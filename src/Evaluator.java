@@ -140,6 +140,17 @@ public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVis
         return null;
     }
 
+    @Override
+    public Void visitForStatement(Statement.ForStatement statement) {
+        Statement.StatementVar var = (Statement.StatementVar) statement.varDeclaration;
+        this.environment.setVariable(var.varName.lexeme, ((Expr.Literal) var.initialVarValue).value);
+        while (isStatementTrue(eval(statement.condition))) {
+            execute(statement.forBlock);
+            eval(statement.incrementation);
+        }
+        return null;
+    }
+
 
 
 

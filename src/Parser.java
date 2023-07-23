@@ -68,6 +68,17 @@ public class Parser {
             Statement whileCode = getNextStatement();
             return new Statement.WhileStatement(condition, whileCode);
 
+        } else if (curr.type == TokenType.FOR) {
+            this.currToken++;
+            checkType(TokenType.LEFT_P, "(");
+            // this is a var declaration
+            Statement initialize = getNextStatement();
+            Expr condition = expression();
+            semicolonCheck();
+            Expr incrementation = expression();
+            checkType(TokenType.RIGHT_P, ")");
+            Statement forBlock = getNextStatement();
+            return new Statement.ForStatement(condition, forBlock, initialize, incrementation);
         } else {
             Expr expr = assignment();
             semicolonCheck();
@@ -81,6 +92,7 @@ public class Parser {
         }
         this.currToken++;
     }
+
     private List<Statement> block() {
         List<Statement> statements = new ArrayList<>();
         while (this.currToken < this.tokens.size() && getCurrToken().type != TokenType.RIGHT_B) {
