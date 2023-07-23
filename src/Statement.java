@@ -6,7 +6,7 @@ abstract class Statement {
     interface StatementVisitor<R> {
         R visitPrint(Print printStatement);
         R visitExpression(Expression statement);
-
+        R visitIfStatement(ifStatement statement);
         R visitVariable(StatementVar variable);
         R visitEnvBlock(EnvBlock block);
     }
@@ -58,6 +58,22 @@ abstract class Statement {
         @Override
         <R> R accept(Statement.StatementVisitor<R> visitor) {
             return visitor.visitEnvBlock(this);
+        }
+    }
+
+    static class ifStatement extends Statement {
+        Expr condition;
+        Statement ifCondTrue;
+        Statement ifCondFalse;
+        ifStatement(Expr condition, Statement ifCondTrue, Statement ifCondFalse) {
+            this.condition = condition;
+            this.ifCondFalse = ifCondFalse;
+            this.ifCondTrue = ifCondTrue;
+        }
+
+        @Override
+        <R> R accept(Statement.StatementVisitor<R> visitor) {
+            return visitor.visitIfStatement(this);
         }
     }
 }

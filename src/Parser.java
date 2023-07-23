@@ -47,6 +47,21 @@ public class Parser {
         } else if (curr.type == TokenType.LEFT_B){
             this.currToken++;
             return new Statement.EnvBlock(block());
+        } else if (curr.type == TokenType.IF) {
+            if (++this.currToken >= this.tokens.size() ||this.tokens.get(this.currToken).type != TokenType.LEFT_P) {
+                Interpreter.error(1, "Missing ( after if");
+            }
+            Expr condition = expression();
+            if (++this.currToken >= this.tokens.size() ||this.tokens.get(this.currToken).type != TokenType.RIGHT_P) {
+                Interpreter.error(1, "Missing ) after if condition");
+            }
+            Statement ifCondTrue = getNextStatement();
+            if (this.tokens.get(this.currToken).type == TokenType.ELSE) {
+                Statement ifCondFalse = getNextStatement();
+                return new Statement.ifStatement(condition, ifCondTrue, ifCondFalse);
+            }
+            return new Statement.ifStatement(condition, ifCondTrue, null);
+
         } else {
             Expr expr = assignment();
             semicolonCheck();

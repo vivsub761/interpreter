@@ -112,6 +112,16 @@ public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVis
         this.environment = prev;
         return null;
     }
+    @Override
+    public Void visitIfStatement(Statement.ifStatement statement) {
+        Object condResult = eval(statement.condition);
+        if (isStatementTrue(condResult)) {
+            execute(statement.ifCondTrue);
+        } else if (statement.ifCondFalse != null){
+            execute(statement.ifCondFalse);
+        }
+        return null;
+    }
 
 
 
@@ -136,6 +146,16 @@ public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVis
 
     private boolean validateStrings(Object left, Object right) {
         return ((left instanceof String) && (right instanceof String));
+    }
+
+    private Boolean isStatementTrue(Object res) {
+        if (res == null) {
+            return false;
+        } else if (res instanceof Boolean) {
+            return (Boolean) res;
+        } else {
+            return true;
+        }
     }
 }
 
