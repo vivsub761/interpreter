@@ -9,6 +9,7 @@ abstract class Statement {
         R visitIfStatement(ifStatement statement);
         R visitVariable(StatementVar variable);
         R visitEnvBlock(EnvBlock block);
+        R visitWhileStatement(WhileStatement statement);
     }
     abstract <R> R accept(Statement.StatementVisitor<R> visitor);
     static class Expression extends Statement {
@@ -74,6 +75,21 @@ abstract class Statement {
         @Override
         <R> R accept(Statement.StatementVisitor<R> visitor) {
             return visitor.visitIfStatement(this);
+        }
+    }
+
+    static class WhileStatement extends Statement {
+        Expr condition;
+        Statement whileBlock;
+
+        WhileStatement(Expr condition, Statement whileCode) {
+            this.condition = condition;
+            this.whileBlock = whileCode;
+        }
+
+        @Override
+        <R> R accept(Statement.StatementVisitor<R> visitor) {
+            return visitor.visitWhileStatement(this);
         }
     }
 }

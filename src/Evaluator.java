@@ -82,6 +82,16 @@ public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVis
     public Object visitVariable(Expr.Variable var) {
         return this.environment.getVal(var.varName.lexeme);
     }
+    @Override
+    public Object visitLogical(Expr.Logical logical) {
+        Object left = eval(logical.left);
+        Boolean leftTruth = isStatementTrue(left);
+        if (logical.operator.type == TokenType.AND) {
+            return leftTruth ? eval(logical.right) : left;
+        } else {
+            return leftTruth ? left : eval(logical.right);
+        }
+    }
 
 //    Statements
     @Override
@@ -119,6 +129,13 @@ public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVis
             execute(statement.ifCondTrue);
         } else if (statement.ifCondFalse != null){
             execute(statement.ifCondFalse);
+        }
+        return null;
+    }
+    @Override
+    public Void visitWhileStatement(Statement.WhileStatement statement) {
+        while (isStatementTrue(eval(statement.condition))) {
+            execute(statement.whileBlock);
         }
         return null;
     }

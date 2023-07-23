@@ -48,28 +48,39 @@ public class Parser {
             this.currToken++;
             return new Statement.EnvBlock(block());
         } else if (curr.type == TokenType.IF) {
-            if (++this.currToken >= this.tokens.size() ||this.tokens.get(this.currToken).type != TokenType.LEFT_P) {
-                Interpreter.error(1, "Missing ( after if");
-            }
+            this.currToken++;
+            checkType(TokenType.LEFT_P, "(");
             Expr condition = expression();
-            if (++this.currToken >= this.tokens.size() ||this.tokens.get(this.currToken).type != TokenType.RIGHT_P) {
-                Interpreter.error(1, "Missing ) after if condition");
-            }
+            checkType(TokenType.RIGHT_P, ")");
             Statement ifCondTrue = getNextStatement();
             if (this.tokens.get(this.currToken).type == TokenType.ELSE) {
+                this.currToken++;
                 Statement ifCondFalse = getNextStatement();
                 return new Statement.ifStatement(condition, ifCondTrue, ifCondFalse);
             }
             return new Statement.ifStatement(condition, ifCondTrue, null);
 
+        } else if (curr.type == TokenType.WHILE) {
+            this.currToken++;
+            checkType(TokenType.LEFT_P, "(");
+            Expr condition = expression();
+            checkType(TokenType.RIGHT_P, ")");
+            Statement whileCode = getNextStatement();
+            return new Statement.WhileStatement(condition, whileCode);
+
         } else {
             Expr expr = assignment();
             semicolonCheck();
             return new Statement.Expression(expr);
-
         }
     }
 
+    private void checkType(TokenType type, String chars) {
+        if (getCurrToken().type != type) {
+            Interpreter.error(1, "Missing " + chars +  " after condition");
+        }
+        this.currToken++;
+    }
     private List<Statement> block() {
         List<Statement> statements = new ArrayList<>();
         while (this.currToken < this.tokens.size() && getCurrToken().type != TokenType.RIGHT_B) {
@@ -96,9 +107,9 @@ public class Parser {
         }
         Token curr = getCurrToken();
         while (curr.type == TokenType.DOUBLE_EQUAL || curr.type == TokenType.EXCLAMATIONEQUALS) {
+            this.currToken++;
             Expr right = comparison();
             left = new Expr.Binary(left, curr, right);
-            this.currToken++;
             curr = getCurrToken();
         }
         return left;
@@ -113,9 +124,9 @@ public class Parser {
         Token curr = getCurrToken();
         while (curr.type == TokenType.GT || curr.type == TokenType.GTE
                 || curr.type == TokenType.LT || curr.type == TokenType.LTE) {
+            this.currToken++;
             Expr right = term();
             left = new Expr.Binary(left, curr, right);
-            this.currToken++;
             curr = getCurrToken();
         }
         return left;
@@ -201,7 +212,7 @@ public class Parser {
         return assignment();
     }
     private Expr assignment() {
-        Expr left = equality();
+        Expr left = or();
         if (getCurrToken().type == TokenType.EQUAL) {
             Token curr = getCurrToken();
             this.currToken++;
@@ -211,6 +222,28 @@ public class Parser {
             } else {
                 Interpreter.error(1, "Invalid assignment");
             }
+        }
+        return left;
+    }
+
+    private Expr or() {
+        Expr left = and();
+        while (getCurrToken().type == TokenType.OR) {
+            Token operator = getCurrToken();
+            this.currToken++;
+            Expr right = equality();
+            left = new Expr.Logical(left, operator, right);
+        }
+        return left;
+    }
+
+    private Expr and() {
+        Expr left = equality();
+        while (getCurrToken().type == TokenType.AND) {
+            Token operator = getCurrToken();
+            this.currToken++;
+            Expr right = equality();
+            left = new Expr.Logical(left, operator, right);
         }
         return left;
     }

@@ -8,6 +8,10 @@ class AstPrinter implements Expr.ExprVisitor<String>{
                 expr.left, expr.right);
     }
     @Override
+    public String visitLogical(Expr.Logical logical) {
+        return "";
+    }
+    @Override
     public String visitVariable(Expr.Variable expr) {
         return expr.varName.lexeme;
     }
