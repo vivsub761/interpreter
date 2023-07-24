@@ -12,7 +12,9 @@ Features to Add: <br>
     break/continue in loops <br>
     declaring and using classes  <br>
     Inheritance <br>
-    Better error handling and reporting
+    Better error handling and reporting <br>
+    Nested functions <br>
+    Library of standard Functions
 
 Bugs: <br>
 Call stack bug during recursive functions
