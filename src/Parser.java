@@ -21,10 +21,9 @@ public class Parser {
         Token curr = getCurrToken();
         if (curr.type == TokenType.PRINT) {
             this.currToken++;
+            checkType(TokenType.LEFT_P, "(");
             Expr expr = expression();
-//            if (!(expr instanceof Expr.Grouping)) {
-//                Interpreter.error(6, "Missing parentheses");
-//            }
+            checkType(TokenType.RIGHT_P, ")");
             semicolonCheck();
             return new Statement.Print(expr);
         } else if (curr.type == TokenType.VAR){
