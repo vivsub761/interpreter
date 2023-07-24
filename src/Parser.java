@@ -79,6 +79,33 @@ public class Parser {
             checkType(TokenType.RIGHT_P, ")");
             Statement forBlock = getNextStatement();
             return new Statement.ForStatement(condition, forBlock, initialize, incrementation);
+        } else if (curr.type == TokenType.DEF) {
+            this.currToken++;
+            checkType(TokenType.IDENTIFIER, "funcName");
+            Token name = this.tokens.get(this.currToken -1 );
+            checkType(TokenType.LEFT_P, "(");
+            List<Token> args = new ArrayList<>();
+            if (getCurrToken().type != TokenType.RIGHT_P) {
+                checkType(TokenType.IDENTIFIER, "argument name");
+                args.add(this.tokens.get(this.currToken - 1));
+                while (getCurrToken().type == TokenType.COMMA) {
+                    checkType(TokenType.IDENTIFIER, "argument name");
+                    args.add(this.tokens.get(this.currToken - 1));
+                }
+            }
+            checkType(TokenType.RIGHT_P, ")");
+            checkType(TokenType.LEFT_B, "{");
+            List<Statement> funcBody = block();
+            return new Statement.functionDef(name, args, funcBody);
+        } else if (curr.type == TokenType.RETURN) {
+            int lineNum = getCurrToken().lineNumber;
+            this.currToken++;
+            Expr returnVal = null;
+            if (getCurrToken().type != TokenType.SEMICOLON) {
+                returnVal = expression();
+            }
+            semicolonCheck();
+            return new Statement.Return(lineNum, returnVal);
         } else {
             Expr expr = assignment();
             semicolonCheck();
@@ -185,7 +212,28 @@ public class Parser {
             this.currToken++;
             return new Expr.Unary(unary(), curr);
         }
-        return primary();
+        return call();
+    }
+
+    private Expr call() {
+        Expr left = primary();
+        List<Expr> args = null;
+        while (getCurrToken().type == TokenType.LEFT_P) {
+            this.currToken++;
+            args = new ArrayList<>();
+            if (getCurrToken().type != TokenType.RIGHT_P) {
+                args.add(expression());
+                while (getCurrToken().type == TokenType.COMMA) {
+                    this.currToken++;
+                    args.add(expression());
+                }
+            }
+            int lineNum = getCurrToken().lineNumber;
+            checkType(TokenType.RIGHT_P, ")");
+            left = new Expr.Call(left, args, lineNum);
+        }
+        return left;
+
     }
 
     private Expr primary() {

@@ -1,5 +1,6 @@
 import javax.swing.plaf.nimbus.State;
 import java.util.List;
+import java.util.function.Function;
 
 abstract class Statement {
 
@@ -11,6 +12,8 @@ abstract class Statement {
         R visitEnvBlock(EnvBlock block);
         R visitWhileStatement(WhileStatement statement);
         R visitForStatement(ForStatement statement);
+        R visitFunction(functionDef function);
+        R visitReturn(Return returnStatement);
     }
     abstract <R> R accept(Statement.StatementVisitor<R> visitor);
     static class Expression extends Statement {
@@ -110,6 +113,35 @@ abstract class Statement {
         @Override
         <R> R accept(Statement.StatementVisitor<R> visitor) {
             return visitor.visitForStatement(this);
+        }
+    }
+    static class functionDef extends Statement {
+        Token name;
+        List<Token> args;
+        List<Statement> funcBody;
+        functionDef(Token name, List<Token> args, List<Statement> funcBody) {
+            this.name = name;
+            this.args = args;
+            this.funcBody = funcBody;
+        }
+
+        @Override
+        <R> R accept(Statement.StatementVisitor<R> visitor) {
+            return visitor.visitFunction(this);
+        }
+    }
+
+    static class Return extends Statement {
+        final Expr returnVal;
+        final int lineNumber;
+
+        Return(int line, Expr returnVal) {
+            this.returnVal = returnVal;
+            this.lineNumber = line;
+        }
+        @Override
+        <R> R accept(Statement.StatementVisitor<R> visitor) {
+            return visitor.visitReturn(this);
         }
     }
 }

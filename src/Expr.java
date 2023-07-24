@@ -1,3 +1,5 @@
+import java.util.List;
+
 abstract class Expr {
     interface ExprVisitor<R> {
         R visitBinary(Binary binary);
@@ -7,6 +9,7 @@ abstract class Expr {
         R visitVariable(Variable variable);
         R visitAssignment(Assignment assignment);
         R visitLogical(Logical logical);
+        R visitCall(Call call);
     }
     abstract <R> R accept(ExprVisitor<R> visitor);
     static class Binary extends Expr {
@@ -102,6 +105,23 @@ abstract class Expr {
         @Override
         <R> R accept(ExprVisitor<R> visitor) {
             return visitor.visitLogical(this);
+        }
+    }
+
+    static class Call extends Expr {
+        final Expr functionToCall;
+        final int lineNumber;
+        final List<Expr> args;
+
+        Call(Expr functionToCall, List<Expr> args, int lineNumber) {
+            this.lineNumber = lineNumber;
+            this.functionToCall = functionToCall;
+            this.args = args;
+        }
+
+        @Override
+        <R> R accept(ExprVisitor<R> visitor) {
+            return visitor.visitCall(this);
         }
     }
 

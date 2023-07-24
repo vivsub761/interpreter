@@ -8,6 +8,10 @@ class AstPrinter implements Expr.ExprVisitor<String>{
                 expr.left, expr.right);
     }
     @Override
+    public String visitCall(Expr.Call expr) {
+        return "";
+    }
+    @Override
     public String visitLogical(Expr.Logical logical) {
         return "";
     }
@@ -44,15 +48,15 @@ class AstPrinter implements Expr.ExprVisitor<String>{
 
         return builder.toString();
     }
-    public static void main(String[] args) {
-        Expr expression = new Expr.Binary(
-                new Expr.Unary(
-                        new Expr.Literal(423984),
-                        new Token(TokenType.MINUS, "-", null)),
-                new Token(TokenType.SLASH, "/", null),
-                new Expr.Grouping(
-                        new Expr.Literal(3234.42587)));
-
-        System.out.println(new AstPrinter().print(expression));
-    }
+//    public static void main(String[] args) {
+//        Expr expression = new Expr.Binary(
+//                new Expr.Unary(
+//                        new Expr.Literal(423984),
+//                        new Token(TokenType.MINUS, "-", null, Toke)),
+//                new Token(TokenType.SLASH, "/", null),
+//                new Expr.Grouping(
+//                        new Expr.Literal(3234.42587)));
+//
+//        System.out.println(new AstPrinter().print(expression));
+//    }
 }

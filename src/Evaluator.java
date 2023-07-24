@@ -1,11 +1,10 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVisitor<Object>{
 
-    private Environment environment;
-    Evaluator() {
-        this.environment = new Environment(null);
-    }
+    final Environment globalEnv = new Environment(null);
+    private Environment environment = globalEnv;
     @Override
     public Object visitLiteral(Expr.Literal expr) {
         return expr.value;
@@ -92,6 +91,20 @@ public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVis
             return leftTruth ? left : eval(logical.right);
         }
     }
+    @Override
+    public Object visitCall(Expr.Call call) {
+        Object functionToCall = eval(call.functionToCall);
+
+        List<Object> args = new ArrayList<>();
+        for (Expr arg : call.args) {
+            args.add(eval(arg));
+        }
+        if (!(functionToCall instanceof Callable)) {
+            Interpreter.error(call.lineNumber, "Cannot call this object");
+        }
+        Callable function = (Callable) functionToCall;
+        return function.call(this, args);
+    }
 
 //    Statements
     @Override
@@ -114,12 +127,7 @@ public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVis
     @Override
     public Void visitEnvBlock(Statement.EnvBlock block) {
         Environment blockEnv = new Environment(this.environment);
-        Environment prev = this.environment;
-        this.environment = blockEnv;
-        for (Statement statement : block.statements) {
-            execute(statement);
-        }
-        this.environment = prev;
+        executeBlock(block.statements, blockEnv);
         return null;
     }
     @Override
@@ -150,11 +158,23 @@ public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVis
         }
         return null;
     }
+    @Override
+    public Void visitFunction(Statement.functionDef function) {
+        Function func = new Function(function);
+        environment.setVariable(function.name.lexeme, func);
+        return null;
+    }
 
-
-
+    @Override
+    public Void visitReturn(Statement.Return returnStatement) {
+        Object value = eval(returnStatement.returnVal);
+        throw new Return(value);
+    }
 
     private Object eval(Expr expr) {
+        if (expr == null) {
+            return null;
+        }
         return expr.accept(this);
     }
     private void execute(Statement statement) {
@@ -165,6 +185,15 @@ public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVis
             execute(statement);
         }
 //        System.out.println(value.toString());
+    }
+
+    void executeBlock(List<Statement> block, Environment environment) {
+        Environment prev = this.environment;
+        this.environment = environment;
+        for (Statement statement : block) {
+            execute(statement);
+        }
+        this.environment = prev;
     }
 
     private boolean validate(Object left, Object right) {

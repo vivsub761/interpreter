@@ -147,7 +147,7 @@ public class Lexer {
         return true;
     }
     private void addToken(TokenType type, String lexeme, Object literal) {
-        this.tokens.add(new Token(type, lexeme, literal));
+        this.tokens.add(new Token(type, lexeme, literal, line));
     }
 
     private void stringLiteral() {
