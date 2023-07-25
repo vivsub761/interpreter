@@ -30,13 +30,13 @@ public class Parser {
             this.currToken++;
             Token next = getCurrToken();
             if (next.type != TokenType.IDENTIFIER) {
-                Interpreter.error(1, "Expect variable name after var keyword");
+                Interpreter.error(next.lineNumber, "Expect variable name after var keyword");
             }
             Token name = getCurrToken();
             this.currToken++;
             next = getCurrToken();
             if (next.type != TokenType.EQUAL) {
-                Interpreter.error(1,"Initial value needed");
+                Interpreter.error(next.lineNumber,"Initial value needed");
             }
             this.currToken++;
             Expr initialVal = expression();
@@ -114,7 +114,7 @@ public class Parser {
 
     private void checkType(TokenType type, String chars) {
         if (getCurrToken().type != type) {
-            Interpreter.error(1, "Missing " + chars +  " after condition");
+            Interpreter.error(getCurrToken().lineNumber, "Missing " + chars +  " after condition");
         }
         this.currToken++;
     }
@@ -125,7 +125,7 @@ public class Parser {
             statements.add(getNextStatement());
         }
         if (this.currToken >= this.tokens.size() || getCurrToken().type != TokenType.RIGHT_B) {
-            Interpreter.error(3, "Missing right bracket");
+            Interpreter.error(getCurrToken().lineNumber, "Missing right bracket");
         }
         this.currToken++;
         return statements;
@@ -133,7 +133,7 @@ public class Parser {
 
     private void semicolonCheck() {
         if (getCurrToken().type != TokenType.SEMICOLON) {
-            Interpreter.error(6, "missing semicolon");
+            Interpreter.error(getCurrToken().lineNumber, "missing semicolon");
         }
         this.currToken++;
     }
@@ -254,7 +254,7 @@ public class Parser {
                     if (getCurrToken().type == TokenType.RIGHT_P) {
                         this.currToken++;
                     } else {
-                        Interpreter.error(1, "no matching right parenthesis");
+                        Interpreter.error(getCurrToken().lineNumber, "no matching right parenthesis");
                     }
                     return new Expr.Grouping(expr);
                 } else if (curr.type == TokenType.IDENTIFIER) {
@@ -279,7 +279,7 @@ public class Parser {
             if (left instanceof Expr.Variable) {
                 return new Expr.Assignment(((Expr.Variable) left).varName, value);
             } else {
-                Interpreter.error(1, "Invalid assignment");
+                Interpreter.error(getCurrToken().lineNumber, "Invalid assignment");
             }
         }
         return left;
