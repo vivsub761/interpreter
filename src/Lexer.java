@@ -31,6 +31,7 @@ public class Lexer {
     Lexer(String fileData) {
         this.fileData = fileData;
         this.tokens = new ArrayList<>();
+        this.line = 1;
         tokenize();
     }
 

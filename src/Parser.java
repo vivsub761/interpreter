@@ -48,9 +48,9 @@ public class Parser {
             return new Statement.EnvBlock(block());
         } else if (curr.type == TokenType.IF) {
             this.currToken++;
-            checkType(TokenType.LEFT_P, "(");
+            checkType(TokenType.LEFT_P, "Missing '(' after if");
             Expr condition = expression();
-            checkType(TokenType.RIGHT_P, ")");
+            checkType(TokenType.RIGHT_P, "Missing ')' after condition");
             Statement ifCondTrue = getNextStatement();
             if (this.tokens.get(this.currToken).type == TokenType.ELSE) {
                 this.currToken++;
@@ -61,39 +61,39 @@ public class Parser {
 
         } else if (curr.type == TokenType.WHILE) {
             this.currToken++;
-            checkType(TokenType.LEFT_P, "(");
+            checkType(TokenType.LEFT_P, "Missing ( after 'while'");
             Expr condition = expression();
-            checkType(TokenType.RIGHT_P, ")");
+            checkType(TokenType.RIGHT_P, "Missing ')' after while loop condition");
             Statement whileCode = getNextStatement();
             return new Statement.WhileStatement(condition, whileCode);
 
         } else if (curr.type == TokenType.FOR) {
             this.currToken++;
-            checkType(TokenType.LEFT_P, "(");
+            checkType(TokenType.LEFT_P, "Missing '(' after for loop declaration");
             // this is a var declaration
             Statement initialize = getNextStatement();
             Expr condition = expression();
             semicolonCheck();
             Expr incrementation = expression();
-            checkType(TokenType.RIGHT_P, ")");
+            checkType(TokenType.RIGHT_P, "Missing ')' after specifying for loop incrementation");
             Statement forBlock = getNextStatement();
             return new Statement.ForStatement(condition, forBlock, initialize, incrementation);
         } else if (curr.type == TokenType.DEF) {
             this.currToken++;
-            checkType(TokenType.IDENTIFIER, "funcName");
+            checkType(TokenType.IDENTIFIER, "Please add a function name after 'def' keyword");
             Token name = this.tokens.get(this.currToken -1 );
-            checkType(TokenType.LEFT_P, "(");
+            checkType(TokenType.LEFT_P, "Missing '(' after function name");
             List<Token> args = new ArrayList<>();
             if (getCurrToken().type != TokenType.RIGHT_P) {
-                checkType(TokenType.IDENTIFIER, "argument name");
+                checkType(TokenType.IDENTIFIER, "Missing argument identifier");
                 args.add(this.tokens.get(this.currToken - 1));
                 while (getCurrToken().type == TokenType.COMMA) {
-                    checkType(TokenType.IDENTIFIER, "argument name");
+                    checkType(TokenType.IDENTIFIER, "Missing argument identifier");
                     args.add(this.tokens.get(this.currToken - 1));
                 }
             }
-            checkType(TokenType.RIGHT_P, ")");
-            checkType(TokenType.LEFT_B, "{");
+            checkType(TokenType.RIGHT_P, "Missing ')' after listing arguments");
+            checkType(TokenType.LEFT_B, "Missing '{' after function is declared");
             List<Statement> funcBody = block();
             return new Statement.functionDef(name, args, funcBody);
         } else if (curr.type == TokenType.RETURN) {
@@ -112,9 +112,9 @@ public class Parser {
         }
     }
 
-    private void checkType(TokenType type, String chars) {
+    private void checkType(TokenType type, String message) {
         if (getCurrToken().type != type) {
-            Interpreter.error(getCurrToken().lineNumber, "Missing " + chars +  " after condition");
+            Interpreter.error(getCurrToken().lineNumber, message);
         }
         this.currToken++;
     }
