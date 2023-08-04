@@ -133,7 +133,7 @@ public class Parser {
 
     private void semicolonCheck() {
         if (getCurrToken().type != TokenType.SEMICOLON) {
-            Interpreter.error(getCurrToken().lineNumber, "missing semicolon");
+            Interpreter.error(getCurrToken().lineNumber, "missing semicolon in line " + Integer.toString(this.getCurrToken().lineNumber));
         }
         this.currToken++;
     }
