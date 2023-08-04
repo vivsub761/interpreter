@@ -21,9 +21,9 @@ public class Parser {
         Token curr = getCurrToken();
         if (curr.type == TokenType.PRINT) {
             this.currToken++;
-            checkType(TokenType.LEFT_P, "(");
+            checkType(TokenType.LEFT_P, "Missing '(' after print");
             Expr expr = expression();
-            checkType(TokenType.RIGHT_P, ")");
+            checkType(TokenType.RIGHT_P, "Missing ')' after print");
             semicolonCheck();
             return new Statement.Print(expr);
         } else if (curr.type == TokenType.VAR){
@@ -125,7 +125,7 @@ public class Parser {
             statements.add(getNextStatement());
         }
         if (this.currToken >= this.tokens.size() || getCurrToken().type != TokenType.RIGHT_B) {
-            Interpreter.error(getCurrToken().lineNumber, "Missing right bracket in line " + Integer.toString(this.getCurrToken().lineNumber));
+            Interpreter.error(getCurrToken().lineNumber, "Missing right bracket");
         }
         this.currToken++;
         return statements;
@@ -133,7 +133,7 @@ public class Parser {
 
     private void semicolonCheck() {
         if (getCurrToken().type != TokenType.SEMICOLON) {
-            Interpreter.error(getCurrToken().lineNumber, "missing semicolon in line " + Integer.toString(this.getCurrToken().lineNumber));
+            Interpreter.error(getCurrToken().lineNumber, "missing semicolon");
         }
         this.currToken++;
     }
@@ -254,7 +254,7 @@ public class Parser {
                     if (getCurrToken().type == TokenType.RIGHT_P) {
                         this.currToken++;
                     } else {
-                        Interpreter.error(this.getCurrToken().lineNumber, "no matching right parenthesis in line " + Integer.toString(this.getCurrToken().lineNumber));
+                        Interpreter.error(this.getCurrToken().lineNumber, "no matching right parenthesis");
                     }
                     return new Expr.Grouping(expr);
                 } else if (curr.type == TokenType.IDENTIFIER) {
