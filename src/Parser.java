@@ -125,7 +125,7 @@ public class Parser {
             statements.add(getNextStatement());
         }
         if (this.currToken >= this.tokens.size() || getCurrToken().type != TokenType.RIGHT_B) {
-            Interpreter.error(getCurrToken().lineNumber, "Missing right bracket");
+            Interpreter.error(getCurrToken().lineNumber, "Missing right bracket in line " + Integer.toString(this.getCurrToken().lineNumber));
         }
         this.currToken++;
         return statements;
