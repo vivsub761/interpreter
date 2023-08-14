@@ -13,16 +13,16 @@ public class Parser {
     List<Statement> parse() {
 
         while (this.currToken < this.tokens.size()) {
-            this.statements.add(getNextStatement());
+            this.statements.add(getNextStatement(null));
         }
         return this.statements;
     }
-    Statement getNextStatement() {
+    Statement getNextStatement(List<Statement> block) {
         Token curr = getCurrToken();
         if (curr.type == TokenType.PRINT) {
             this.currToken++;
             checkType(TokenType.LEFT_P, "Missing '(' after print");
-            Expr expr = expression();
+            Expr expr = expression(block);
             checkType(TokenType.RIGHT_P, "Missing ')' after print");
             semicolonCheck();
             return new Statement.Print(expr);
@@ -39,7 +39,7 @@ public class Parser {
                 Interpreter.error(next.lineNumber,"Initial value needed");
             }
             this.currToken++;
-            Expr initialVal = expression();
+            Expr initialVal = expression(block);
             semicolonCheck();
             return new Statement.StatementVar(name, initialVal);
         } else if (curr.type == TokenType.LEFT_B){
@@ -48,12 +48,12 @@ public class Parser {
         } else if (curr.type == TokenType.IF) {
             this.currToken++;
             checkType(TokenType.LEFT_P, "Missing '(' after if");
-            Expr condition = expression();
+            Expr condition = expression(block);
             checkType(TokenType.RIGHT_P, "Missing ')' after condition");
-            Statement ifCondTrue = getNextStatement();
+            Statement ifCondTrue = getNextStatement(null);
             if (this.tokens.get(this.currToken).type == TokenType.ELSE) {
                 this.currToken++;
-                Statement ifCondFalse = getNextStatement();
+                Statement ifCondFalse = getNextStatement(null);
                 return new Statement.ifStatement(condition, ifCondTrue, ifCondFalse);
             }
             return new Statement.ifStatement(condition, ifCondTrue, null);
@@ -61,21 +61,21 @@ public class Parser {
         } else if (curr.type == TokenType.WHILE) {
             this.currToken++;
             checkType(TokenType.LEFT_P, "Missing ( after 'while'");
-            Expr condition = expression();
+            Expr condition = expression(block);
             checkType(TokenType.RIGHT_P, "Missing ')' after while loop condition");
-            Statement whileCode = getNextStatement();
+            Statement whileCode = getNextStatement(null);
             return new Statement.WhileStatement(condition, whileCode);
 
         } else if (curr.type == TokenType.FOR) {
             this.currToken++;
             checkType(TokenType.LEFT_P, "Missing '(' after for loop declaration");
             // this is a var declaration
-            Statement initialize = getNextStatement();
-            Expr condition = expression();
+            Statement initialize = getNextStatement(null);
+            Expr condition = expression(block);
             semicolonCheck();
-            Expr incrementation = expression();
+            Expr incrementation = expression(block);
             checkType(TokenType.RIGHT_P, "Missing ')' after specifying for loop incrementation");
-            Statement forBlock = getNextStatement();
+            Statement forBlock = getNextStatement(null);
             return new Statement.ForStatement(condition, forBlock, initialize, incrementation);
         } else if (curr.type == TokenType.DEF) {
             this.currToken++;
@@ -100,12 +100,12 @@ public class Parser {
             this.currToken++;
             Expr returnVal = null;
             if (getCurrToken().type != TokenType.SEMICOLON) {
-                returnVal = expression();
+                returnVal = expression(block);
             }
             semicolonCheck();
             return new Statement.Return(lineNum, returnVal);
         } else {
-            Expr expr = assignment();
+            Expr expr = assignment(block);
             semicolonCheck();
             return new Statement.Expression(expr);
         }
@@ -121,7 +121,7 @@ public class Parser {
     private List<Statement> block() {
         List<Statement> statements = new ArrayList<>();
         while (this.currToken < this.tokens.size() && getCurrToken().type != TokenType.RIGHT_B) {
-            statements.add(getNextStatement());
+            statements.add(getNextStatement(statements));
         }
         if (this.currToken >= this.tokens.size() || getCurrToken().type != TokenType.RIGHT_B) {
             Interpreter.error(getCurrToken().lineNumber, "Missing right bracket");
@@ -137,15 +137,15 @@ public class Parser {
         this.currToken++;
     }
 
-    private Expr equality() {
-        Expr left = comparison();
+    private Expr equality(List<Statement> block) {
+        Expr left = comparison(block);
         if (this.currToken == this.tokens.size()) {
             return left;
         }
         Token curr = getCurrToken();
         while (curr.type == TokenType.DOUBLE_EQUAL || curr.type == TokenType.EXCLAMATIONEQUALS) {
             this.currToken++;
-            Expr right = comparison();
+            Expr right = comparison(block);
             left = new Expr.Binary(left, curr, right);
             curr = getCurrToken();
         }
@@ -153,8 +153,8 @@ public class Parser {
     }
 
 
-    private Expr comparison() {
-        Expr left = term();
+    private Expr comparison(List<Statement> block) {
+        Expr left = term(block);
         if (this.currToken == this.tokens.size()) {
             return left;
         }
@@ -162,15 +162,15 @@ public class Parser {
         while (curr.type == TokenType.GT || curr.type == TokenType.GTE
                 || curr.type == TokenType.LT || curr.type == TokenType.LTE) {
             this.currToken++;
-            Expr right = term();
+            Expr right = term(block);
             left = new Expr.Binary(left, curr, right);
             curr = getCurrToken();
         }
         return left;
     }
 
-    private Expr term() {
-        Expr left = factor();
+    private Expr term(List<Statement> block) {
+        Expr left = factor(block);
         if (this.currToken == this.tokens.size()) {
             return left;
         }
@@ -178,7 +178,7 @@ public class Parser {
 //        DO SHIT HERE FOR i++, i--, etc
         while (curr.type == TokenType.PLUS || curr.type == TokenType.MINUS) {
             this.currToken++;
-            Expr right = factor();
+            Expr right = factor(block);
             left = new Expr.Binary(left, curr, right);
             if (this.currToken >= this.tokens.size()) {
                 break;
@@ -188,15 +188,15 @@ public class Parser {
         return left;
     }
 
-    private Expr factor() {
-        Expr left = unary();
+    private Expr factor(List<Statement> block) {
+        Expr left = unary(block);
         if (this.currToken == this.tokens.size()) {
             return left;
         }
         Token curr = getCurrToken();
         while (curr.type == TokenType.SLASH || curr.type == TokenType.STAR) {
             this.currToken++;
-            Expr right = unary();
+            Expr right = unary(block);
             left = new Expr.Binary(left, curr, right);
             if (this.currToken >= this.tokens.size()) {
                 break;
@@ -205,26 +205,26 @@ public class Parser {
         }
         return left;
     }
-    private Expr unary() {
+    private Expr unary(List<Statement> block) {
         Token curr = getCurrToken();
         if (curr.type == TokenType.EXCLAMATION || curr.type == TokenType.MINUS) {
             this.currToken++;
-            return new Expr.Unary(unary(), curr);
+            return new Expr.Unary(unary(block), curr);
         }
-        return call();
+        return call(block);
     }
 
-    private Expr call() {
-        Expr left = primary();
+    private Expr call(List<Statement> block) {
+        Expr left = primary(block);
         List<Expr> args = null;
         while (getCurrToken().type == TokenType.LEFT_P) {
             this.currToken++;
             args = new ArrayList<>();
             if (getCurrToken().type != TokenType.RIGHT_P) {
-                args.add(expression());
+                args.add(expression(block));
                 while (getCurrToken().type == TokenType.COMMA) {
                     this.currToken++;
-                    args.add(expression());
+                    args.add(expression(block));
                 }
             }
             int lineNum = getCurrToken().lineNumber;
@@ -235,7 +235,7 @@ public class Parser {
 
     }
 
-    private Expr primary() {
+    private Expr primary(List<Statement> block) {
         Token curr = getCurrToken();
         switch (curr.type) {
             case NULL: this.currToken++; return new Expr.Literal(null);
@@ -247,7 +247,7 @@ public class Parser {
                     return new Expr.Literal(curr.literal);
                 } else if (curr.type == TokenType.LEFT_P) {
                     this.currToken++;
-                    Expr expr = expression();
+                    Expr expr = expression(block);
                     if (this.currToken++ >= this.tokens.size()) {
                         return expr;
                     }
@@ -264,14 +264,22 @@ public class Parser {
                     Expr assignTo = new Expr.Binary(new Expr.Variable(variable), new Token(TokenType.MINUS, "-", null, this.getCurrToken().lineNumber), new Expr.Literal((float) 1));
                     Expr assignment = new Expr.Assignment(variable, assignTo);
                     Statement minusminus = new Statement.Expression(assignment);
-                    this.statements.add(minusminus);
+                    if (block == null) {
+                        this.statements.add(minusminus);
+                    } else {
+                        block.add(minusminus);
+                    }
                     return new Expr.Variable(this.tokens.get(this.currToken++));
                 } else if (curr.type == TokenType.DOUBLEPLUS) {
                     Token variable = this.tokens.get(++this.currToken);
                     Expr assignTo = new Expr.Binary(new Expr.Variable(variable), new Token(TokenType.PLUS, "+", null, this.getCurrToken().lineNumber), new Expr.Literal((float) 1));
                     Expr assignment = new Expr.Assignment(variable, assignTo);
                     Statement plusplus = new Statement.Expression(assignment);
-                    this.statements.add(plusplus);
+                    if (block == null) {
+                        this.statements.add(plusplus);
+                    } else {
+                        block.add(plusplus);
+                    }
                     return new Expr.Variable(this.tokens.get(this.currToken++));
                 }
         }
@@ -281,15 +289,15 @@ public class Parser {
         return this.tokens.get(this.currToken);
     }
 
-    private Expr expression() {
-        return assignment();
+    private Expr expression(List<Statement> block) {
+        return assignment(block);
     }
-    private Expr assignment() {
-        Expr left = or();
+    private Expr assignment(List<Statement> block) {
+        Expr left = or(block);
         if (getCurrToken().type == TokenType.EQUAL) {
             Token curr = getCurrToken();
             this.currToken++;
-            Expr value = assignment();
+            Expr value = assignment(block);
             if (left instanceof Expr.Variable) {
                 return new Expr.Assignment(((Expr.Variable) left).varName, value);
             } else {
@@ -299,23 +307,23 @@ public class Parser {
         return left;
     }
 
-    private Expr or() {
-        Expr left = and();
+    private Expr or(List<Statement> block) {
+        Expr left = and(block);
         while (getCurrToken().type == TokenType.OR) {
             Token operator = getCurrToken();
             this.currToken++;
-            Expr right = equality();
+            Expr right = equality(block);
             left = new Expr.Logical(left, operator, right);
         }
         return left;
     }
 
-    private Expr and() {
-        Expr left = equality();
+    private Expr and(List<Statement> block) {
+        Expr left = equality(block);
         while (getCurrToken().type == TokenType.AND) {
             Token operator = getCurrToken();
             this.currToken++;
-            Expr right = equality();
+            Expr right = equality(block);
             left = new Expr.Logical(left, operator, right);
         }
         return left;
