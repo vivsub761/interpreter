@@ -42,7 +42,6 @@ public class Parser {
             Expr initialVal = expression();
             semicolonCheck();
             return new Statement.StatementVar(name, initialVal);
-
         } else if (curr.type == TokenType.LEFT_B){
             this.currToken++;
             return new Statement.EnvBlock(block());
@@ -176,6 +175,7 @@ public class Parser {
             return left;
         }
         Token curr = getCurrToken();
+//        DO SHIT HERE FOR i++, i--, etc
         while (curr.type == TokenType.PLUS || curr.type == TokenType.MINUS) {
             this.currToken++;
             Expr right = factor();
@@ -258,6 +258,20 @@ public class Parser {
                     }
                     return new Expr.Grouping(expr);
                 } else if (curr.type == TokenType.IDENTIFIER) {
+                    return new Expr.Variable(this.tokens.get(this.currToken++));
+                } else if (curr.type == TokenType.DOUBLEMINUS) {
+                    Token variable = this.tokens.get(++this.currToken);
+                    Expr assignTo = new Expr.Binary(new Expr.Variable(variable), new Token(TokenType.MINUS, "-", null, this.getCurrToken().lineNumber), new Expr.Literal((float) 1));
+                    Expr assignment = new Expr.Assignment(variable, assignTo);
+                    Statement minusminus = new Statement.Expression(assignment);
+                    this.statements.add(minusminus);
+                    return new Expr.Variable(this.tokens.get(this.currToken++));
+                } else if (curr.type == TokenType.DOUBLEPLUS) {
+                    Token variable = this.tokens.get(++this.currToken);
+                    Expr assignTo = new Expr.Binary(new Expr.Variable(variable), new Token(TokenType.PLUS, "+", null, this.getCurrToken().lineNumber), new Expr.Literal((float) 1));
+                    Expr assignment = new Expr.Assignment(variable, assignTo);
+                    Statement plusplus = new Statement.Expression(assignment);
+                    this.statements.add(plusplus);
                     return new Expr.Variable(this.tokens.get(this.currToken++));
                 }
         }
