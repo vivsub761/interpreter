@@ -175,7 +175,6 @@ public class Parser {
             return left;
         }
         Token curr = getCurrToken();
-//        DO SHIT HERE FOR i++, i--, etc
         while (curr.type == TokenType.PLUS || curr.type == TokenType.MINUS) {
             this.currToken++;
             Expr right = factor(block);
@@ -294,7 +293,17 @@ public class Parser {
     }
     private Expr assignment(List<Statement> block) {
         Expr left = or(block);
-        if (getCurrToken().type == TokenType.EQUAL) {
+        //        DO STUFF HERE FOR i++, i--, etc
+        TokenType currType= this.getCurrToken().type;
+        if (currType == TokenType.PLUSEQUALS || currType == TokenType.MINUSEQUALS ) {
+            if (!(left instanceof Expr.Variable)) {
+                Interpreter.error(this.getCurrToken().lineNumber, "Invalid Assignment");
+            }
+            this.currToken++;
+            Token operator = new Token(currType == TokenType.PLUSEQUALS ? TokenType.PLUS : TokenType.MINUS, currType == TokenType.PLUSEQUALS ? "+" :"-", null, this.getCurrToken().lineNumber);
+            Expr value = new Expr.Binary(left, operator, assignment(block));
+            return new Expr.Assignment(((Expr.Variable) left).varName, value);
+        } else if (currType == TokenType.EQUAL) {
             Token curr = getCurrToken();
             this.currToken++;
             Expr value = assignment(block);
