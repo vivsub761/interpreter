@@ -247,11 +247,7 @@ public class Parser {
                 } else if (curr.type == TokenType.LEFT_P) {
                     this.currToken++;
                     Expr expr = expression(block);
-                    if (getCurrToken().type == TokenType.RIGHT_P) {
-                        this.currToken++;
-                    } else {
-                        Interpreter.error(this.getCurrToken().lineNumber, "no matching right parenthesis");
-                    }
+                    checkType(TokenType.RIGHT_P, "no matching right parenthesis");
                     return new Expr.Grouping(expr);
                 } else if (curr.type == TokenType.IDENTIFIER) {
                     return new Expr.Variable(this.tokens.get(this.currToken++));
