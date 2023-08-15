@@ -247,9 +247,9 @@ public class Parser {
                 } else if (curr.type == TokenType.LEFT_P) {
                     this.currToken++;
                     Expr expr = expression(block);
-                    if (this.currToken++ >= this.tokens.size()) {
-                        return expr;
-                    }
+//                    if (this.currToken++ >= this.tokens.size()) {
+//                        return expr;
+//                    }
                     if (getCurrToken().type == TokenType.RIGHT_P) {
                         this.currToken++;
                     } else {
