@@ -250,27 +250,29 @@ public class Parser {
                     checkType(TokenType.RIGHT_P, "no matching right parenthesis");
                     return new Expr.Grouping(expr);
                 } else if (curr.type == TokenType.IDENTIFIER) {
-                    return new Expr.Variable(this.tokens.get(this.currToken++));
-                } else if (curr.type == TokenType.DOUBLEMINUS) {
-                    Token variable = this.tokens.get(++this.currToken);
-                    Expr assignTo = new Expr.Binary(new Expr.Variable(variable), new Token(TokenType.MINUS, "-", null, this.getCurrToken().lineNumber), new Expr.Literal((float) 1));
-                    Expr assignment = new Expr.Assignment(variable, assignTo);
-                    Statement minusminus = new Statement.Expression(assignment);
-                    if (block == null) {
-                        this.statements.add(minusminus);
-                    } else {
-                        block.add(minusminus);
+                    Expr var = new Expr.Variable(this.tokens.get(this.currToken++));
+                    Token next = this.getCurrToken();
+                    if (next.type == TokenType.DOUBLEPLUS || next.type == TokenType.DOUBLEMINUS) {
+                        Expr assignTo = new Expr.Binary(new Expr.Variable(curr),
+                                new Token(next.type == TokenType.DOUBLEMINUS ? TokenType.MINUS : TokenType.PLUS,
+                                        next.type == TokenType.DOUBLEMINUS ? "-" : "+", null,
+                                        this.getCurrToken().lineNumber), new Expr.Literal((float) 1));
+                        Expr assignment = new Expr.Assignment(curr, assignTo);
+                        this.currToken++;
                     }
-                    return new Expr.Variable(this.tokens.get(this.currToken++));
-                } else if (curr.type == TokenType.DOUBLEPLUS) {
+                    return var;
+                } else if (curr.type == TokenType.DOUBLEMINUS || curr.type == TokenType.DOUBLEPLUS) {
                     Token variable = this.tokens.get(++this.currToken);
-                    Expr assignTo = new Expr.Binary(new Expr.Variable(variable), new Token(TokenType.PLUS, "+", null, this.getCurrToken().lineNumber), new Expr.Literal((float) 1));
+                    Expr assignTo = new Expr.Binary(new Expr.Variable(variable),
+                            new Token(curr.type == TokenType.DOUBLEMINUS ? TokenType.MINUS : TokenType.PLUS,
+                                    curr.type == TokenType.DOUBLEMINUS ? "-" : "+",
+                                    null, this.getCurrToken().lineNumber), new Expr.Literal((float) 1));
                     Expr assignment = new Expr.Assignment(variable, assignTo);
-                    Statement plusplus = new Statement.Expression(assignment);
+                    Statement desugaredStatement = new Statement.Expression(assignment);
                     if (block == null) {
-                        this.statements.add(plusplus);
+                        this.statements.add(desugaredStatement);
                     } else {
-                        block.add(plusplus);
+                        block.add(desugaredStatement);
                     }
                     return new Expr.Variable(this.tokens.get(this.currToken++));
                 }
@@ -286,9 +288,8 @@ public class Parser {
     }
     private Expr assignment(List<Statement> block) {
         Expr left = or(block);
-        //        DO STUFF HERE FOR i++, i--, etc
         TokenType currType= this.getCurrToken().type;
-        if (currType == TokenType.PLUSEQUALS || currType == TokenType.MINUSEQUALS ) {
+        if (currType == TokenType.PLUSEQUALS || currType == TokenType.MINUSEQUALS) {
             if (!(left instanceof Expr.Variable)) {
                 Interpreter.error(this.getCurrToken().lineNumber, "Invalid Assignment");
             }
