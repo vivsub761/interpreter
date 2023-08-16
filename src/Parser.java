@@ -276,18 +276,32 @@ public class Parser {
             this.currToken++;
             int numArgs = countArgs();
             args = new ArrayList<>();
-            if (getCurrToken().type != TokenType.RIGHT_P) {
-                args.add(expression(block));
-                while (getCurrToken().type == TokenType.COMMA) {
-                    this.currToken++;
+            Token funcName = ((Expr.Variable) left).varName;
+            Statement.functionDef targetFunction = this.functions.get(funcName);
+            if (numArgs > targetFunction.args.size()) {
+                Interpreter.error(funcName.lineNumber, "Too many arguments");
+            } else if (numArgs == targetFunction.args.size()) {
+                if (getCurrToken().type != TokenType.RIGHT_P) {
                     args.add(expression(block));
+                    while (getCurrToken().type == TokenType.COMMA) {
+                        this.currToken++;
+                        args.add(expression(block));
+                    }
                 }
+            } else {
+                handleDefaults(args, targetFunction);
             }
+
             int lineNum = getCurrToken().lineNumber;
             checkType(TokenType.RIGHT_P, ")");
             left = new Expr.Call(left, args, lineNum);
         }
         return left;
+
+    }
+
+    private void handleDefaults(List<Expr> args, Statement.functionDef targetFunction) {
+        Token curr = this.getCurrToken();
 
     }
 
