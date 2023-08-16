@@ -1,7 +1,7 @@
 import javax.swing.plaf.nimbus.State;
 import java.util.List;
 import java.util.function.Function;
-
+import java.util.HashMap;
 abstract class Statement {
 
     interface StatementVisitor<R> {
@@ -117,9 +117,9 @@ abstract class Statement {
     }
     static class functionDef extends Statement {
         Token name;
-        List<Token> args;
+        HashMap<Token, Object> args;
         List<Statement> funcBody;
-        functionDef(Token name, List<Token> args, List<Statement> funcBody) {
+        functionDef(Token name, HashMap<Token, Object> args, List<Statement> funcBody) {
             this.name = name;
             this.args = args;
             this.funcBody = funcBody;

@@ -1,5 +1,6 @@
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Parser {
@@ -90,13 +91,33 @@ public class Parser {
             checkType(TokenType.IDENTIFIER, "Please add a function name after 'def' keyword");
             Token name = this.tokens.get(this.currToken -1 );
             checkType(TokenType.LEFT_P, "Missing '(' after function name");
-            List<Token> args = new ArrayList<>();
+            HashMap<Token, Object> args = new HashMap<>();
             if (getCurrToken().type != TokenType.RIGHT_P) {
                 checkType(TokenType.IDENTIFIER, "Missing argument identifier");
-                args.add(this.tokens.get(this.currToken - 1));
+                Token variable = this.tokens.get(this.currToken - 1);
+                Expr defaultArg =  null;
+                if (getCurrToken().type == TokenType.EQUAL) {
+                    this.currToken++;
+                    TokenType defaultType = getCurrToken().type;
+                    if (!(defaultType == TokenType.NULL || defaultType == TokenType.TRUE || defaultType == TokenType.FALSE || defaultType == TokenType.STRING)) {
+                        Interpreter.error(this.getCurrToken().lineNumber, "Default argument for function must be a literal");
+                    }
+                    defaultArg = primary(block);
+                }
+                args.put(variable, defaultArg);
                 while (getCurrToken().type == TokenType.COMMA) {
                     checkType(TokenType.IDENTIFIER, "Missing argument identifier");
-                    args.add(this.tokens.get(this.currToken - 1));
+                    Token var2 = this.tokens.get(this.currToken - 1);
+                    Expr defaultArg2 =  null;
+                    if (getCurrToken().type == TokenType.EQUAL) {
+                        this.currToken++;
+                        TokenType defaultType = getCurrToken().type;
+                        if (!(defaultType == TokenType.NULL || defaultType == TokenType.TRUE || defaultType == TokenType.FALSE || defaultType == TokenType.STRING)) {
+                            Interpreter.error(this.getCurrToken().lineNumber, "Default argument for function must be a literal");
+                        }
+                        defaultArg2 = primary(block);
+                    }
+                    args.put(var2, defaultArg2);
                 }
             }
             checkType(TokenType.RIGHT_P, "Missing ')' after listing arguments");
@@ -119,11 +140,12 @@ public class Parser {
         }
     }
 
-    private void checkType(TokenType type, String message) {
+    private boolean checkType(TokenType type, String message) {
         if (getCurrToken().type != type) {
             Interpreter.error(getCurrToken().lineNumber, message);
         }
         this.currToken++;
+        return true;
     }
 
     private List<Statement> block() {
