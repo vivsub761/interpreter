@@ -17,6 +17,10 @@ public class Parser {
 
         while (this.currToken < this.tokens.size()) {
             this.statements.add(getNextStatement(null));
+            for (Pair pair : addToStatements) {
+                this.statements.add((Integer) pair.getFirst(), (Statement.Expression)pair.getSecond());
+            }
+            this.addToStatements.clear();
         }
         return this.statements;
     }
@@ -125,6 +129,10 @@ public class Parser {
         List<Statement> statements = new ArrayList<>();
         while (this.currToken < this.tokens.size() && getCurrToken().type != TokenType.RIGHT_B) {
             statements.add(getNextStatement(statements));
+            for (Pair pair : this.addToBlock) {
+                statements.add((Integer) pair.getFirst(), (Statement.Expression) pair.getSecond());
+            }
+            this.addToBlock.clear();
         }
         if (this.currToken >= this.tokens.size() || getCurrToken().type != TokenType.RIGHT_B) {
             Interpreter.error(getCurrToken().lineNumber, "Missing right bracket");
@@ -261,12 +269,13 @@ public class Parser {
                                         next.type == TokenType.DOUBLEMINUS ? "-" : "+", null,
                                         this.getCurrToken().lineNumber), new Expr.Literal((float) 1));
                         Expr assignment = new Expr.Assignment(curr, assignTo);
+                        Statement desugared = new Statement.Expression(assignment);
                         Pair thisPair;
                         if (block == null) {
-                            thisPair = new Pair(this.statements.size() + 1, assignment);
+                            thisPair = new Pair(this.statements.size() + 1, desugared);
                             this.addToStatements.add(thisPair);
                         } else {
-                            thisPair = new Pair(block.size() + 1, assignment);
+                            thisPair = new Pair(block.size() + 1, desugared);
                             this.addToBlock.add(thisPair);
                         }
                         this.currToken++;
