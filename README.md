@@ -14,7 +14,7 @@ Features to Add: <br>
     Inheritance <br>
     Better error handling and reporting <br>
     Nested functions <br>
-    Library of standard Functions
+    Library of standard Functions <br>
     default function arguments
 
 Bugs: <br>
