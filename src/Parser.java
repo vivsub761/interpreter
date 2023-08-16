@@ -80,6 +80,7 @@ public class Parser {
             Statement initialize = getNextStatement(null);
             Expr condition = expression(block);
             semicolonCheck();
+
             Expr incrementation = expression(block);
             checkType(TokenType.RIGHT_P, "Missing ')' after specifying for loop incrementation");
             Statement forBlock = getNextStatement(null);
