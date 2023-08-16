@@ -1,4 +1,4 @@
-Working on an interpreter for a programming language
+Working on an interpreter for a custom programming language
 
 Current features: <br>
     Variable Declaration  <br>
@@ -15,6 +15,7 @@ Features to Add: <br>
     Better error handling and reporting <br>
     Nested functions <br>
     Library of standard Functions
+    default function arguments
 
 Bugs: <br>
 Call stack bug during recursive functions
