@@ -7,6 +7,10 @@ public class Parser {
     private final List<Token> tokens;
     private int currToken;
 
+//    This hashmap has the following format Map<key = Token funcName, val = Statement.functionDef>
+//    When the parser finds a function, it will store them here. When the parser finds a function call to the functions,
+//    it will use this hashmap to resolve default arguments and send the full argument list to the evaluator
+    HashMap<Token, Statement.functionDef> functions = new HashMap<>();
     List<Pair> addToBlock = new ArrayList<>();
     List<Pair> addToStatements = new ArrayList<>();
     List<Statement> statements = new ArrayList<>();
@@ -99,7 +103,7 @@ public class Parser {
                 if (getCurrToken().type == TokenType.EQUAL) {
                     this.currToken++;
                     TokenType defaultType = getCurrToken().type;
-                    if (!(defaultType == TokenType.NULL || defaultType == TokenType.TRUE || defaultType == TokenType.FALSE || defaultType == TokenType.STRING)) {
+                    if (!(defaultType == TokenType.NULL || defaultType == TokenType.TRUE || defaultType == TokenType.FALSE || defaultType == TokenType.STRING || defaultType == TokenType.NUM)) {
                         Interpreter.error(this.getCurrToken().lineNumber, "Default argument for function must be a literal");
                     }
                     defaultArg = primary(block);
@@ -123,7 +127,9 @@ public class Parser {
             checkType(TokenType.RIGHT_P, "Missing ')' after listing arguments");
             checkType(TokenType.LEFT_B, "Missing '{' after function is declared");
             List<Statement> funcBody = block();
-            return new Statement.functionDef(name, args, funcBody);
+            Statement funcDef = new Statement.functionDef(name, args, funcBody);
+            this.functions.put(name, (Statement.functionDef) funcDef);
+            return funcDef;
         } else if (curr.type == TokenType.RETURN) {
             int lineNum = getCurrToken().lineNumber;
             this.currToken++;
@@ -246,12 +252,29 @@ public class Parser {
         }
         return call(block);
     }
-
+    private int countArgs() {
+        int rewind = this.currToken;
+        if (getCurrToken().type == TokenType.RIGHT_P) {
+            return 0;
+        }
+        this.currToken++;
+        int commaCount = 0;
+        while (getCurrToken().type != TokenType.RIGHT_P) {
+            if (this.getCurrToken().type == TokenType.COMMA) {
+                commaCount++;
+            }
+            this.currToken++;
+        }
+        this.currToken = rewind;
+        return commaCount + 1;
+    }
     private Expr call(List<Statement> block) {
         Expr left = primary(block);
+
         List<Expr> args = null;
         while (getCurrToken().type == TokenType.LEFT_P) {
             this.currToken++;
+            int numArgs = countArgs();
             args = new ArrayList<>();
             if (getCurrToken().type != TokenType.RIGHT_P) {
                 args.add(expression(block));
