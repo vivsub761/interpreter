@@ -5,6 +5,9 @@ import java.util.List;
 public class Parser {
     private final List<Token> tokens;
     private int currToken;
+
+    List<Pair> addToBlock = new ArrayList<>();
+    List<Pair> addToStatements = new ArrayList<>();
     List<Statement> statements = new ArrayList<>();
     Parser(List<Token> tokens) {
         this.tokens = tokens;
@@ -258,6 +261,14 @@ public class Parser {
                                         next.type == TokenType.DOUBLEMINUS ? "-" : "+", null,
                                         this.getCurrToken().lineNumber), new Expr.Literal((float) 1));
                         Expr assignment = new Expr.Assignment(curr, assignTo);
+                        Pair thisPair;
+                        if (block == null) {
+                            thisPair = new Pair(this.statements.size() + 1, assignment);
+                            this.addToStatements.add(thisPair);
+                        } else {
+                            thisPair = new Pair(block.size() + 1, assignment);
+                            this.addToBlock.add(thisPair);
+                        }
                         this.currToken++;
                     }
                     return var;
