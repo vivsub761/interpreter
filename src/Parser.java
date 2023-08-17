@@ -303,6 +303,16 @@ public class Parser {
     private void handleDefaults(List<Expr> args, Statement.functionDef targetFunction) {
         Token curr = this.getCurrToken();
 
+        while (curr.type != TokenType.RIGHT_P) {
+            Token argName = curr;
+            if (!targetFunction.args.containsKey(argName)) {
+                Interpreter.error(argName.lineNumber, "Invalid argument name " + argName.lexeme);
+            }
+            checkType(TokenType.EQUAL, "Missing equal sign after argName");
+
+
+        }
+
     }
 
     private Expr primary(List<Statement> block) {
