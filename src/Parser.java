@@ -95,33 +95,36 @@ public class Parser {
             checkType(TokenType.IDENTIFIER, "Please add a function name after 'def' keyword");
             Token name = this.tokens.get(this.currToken -1 );
             checkType(TokenType.LEFT_P, "Missing '(' after function name");
-            HashMap<Token, Object> args = new HashMap<>();
+            HashMap<Pair, Object> args = new HashMap<>();
+            int argNum = 0;
             if (getCurrToken().type != TokenType.RIGHT_P) {
                 checkType(TokenType.IDENTIFIER, "Missing argument identifier");
                 Token variable = this.tokens.get(this.currToken - 1);
                 Expr defaultArg =  null;
                 if (getCurrToken().type == TokenType.EQUAL) {
                     this.currToken++;
-                    TokenType defaultType = getCurrToken().type;
-                    if (!(defaultType == TokenType.NULL || defaultType == TokenType.TRUE || defaultType == TokenType.FALSE || defaultType == TokenType.STRING || defaultType == TokenType.NUM)) {
+                    if (!this.getCurrToken().isLiteral()) {
+                        Interpreter.error(this.getCurrToken().lineNumber, "Default argument for function must be a literal");
+                    }
+                    if (!this.getCurrToken().isLiteral()) {
                         Interpreter.error(this.getCurrToken().lineNumber, "Default argument for function must be a literal");
                     }
                     defaultArg = primary(block);
                 }
-                args.put(variable, defaultArg);
+                args.put(new Pair(variable, argNum++), defaultArg);
                 while (getCurrToken().type == TokenType.COMMA) {
+                    this.currToken++;
                     checkType(TokenType.IDENTIFIER, "Missing argument identifier");
                     Token var2 = this.tokens.get(this.currToken - 1);
                     Expr defaultArg2 =  null;
                     if (getCurrToken().type == TokenType.EQUAL) {
                         this.currToken++;
-                        TokenType defaultType = getCurrToken().type;
-                        if (!(defaultType == TokenType.NULL || defaultType == TokenType.TRUE || defaultType == TokenType.FALSE || defaultType == TokenType.STRING)) {
+                        if (!this.getCurrToken().isLiteral()) {
                             Interpreter.error(this.getCurrToken().lineNumber, "Default argument for function must be a literal");
                         }
                         defaultArg2 = primary(block);
                     }
-                    args.put(var2, defaultArg2);
+                    args.put(new Pair(var2, argNum++), defaultArg2);
                 }
             }
             checkType(TokenType.RIGHT_P, "Missing ')' after listing arguments");
@@ -271,25 +274,17 @@ public class Parser {
     private Expr call(List<Statement> block) {
         Expr left = primary(block);
 
-        List<Expr> args = null;
+        HashMap<Expr, Object> args = null;
         while (getCurrToken().type == TokenType.LEFT_P) {
             this.currToken++;
             int numArgs = countArgs();
-            args = new ArrayList<>();
+            args = new HashMap<>();
             Token funcName = ((Expr.Variable) left).varName;
             Statement.functionDef targetFunction = this.functions.get(funcName);
             if (numArgs > targetFunction.args.size()) {
                 Interpreter.error(funcName.lineNumber, "Too many arguments");
-            } else if (numArgs == targetFunction.args.size()) {
-                if (getCurrToken().type != TokenType.RIGHT_P) {
-                    args.add(expression(block));
-                    while (getCurrToken().type == TokenType.COMMA) {
-                        this.currToken++;
-                        args.add(expression(block));
-                    }
-                }
             } else {
-                handleDefaults(args, targetFunction);
+                handleArgs(args, targetFunction, block);
             }
 
             int lineNum = getCurrToken().lineNumber;
@@ -300,18 +295,14 @@ public class Parser {
 
     }
 
-    private void handleDefaults(List<Expr> args, Statement.functionDef targetFunction) {
+    private void handleArgs(HashMap<Expr, Object> args, Statement.functionDef targetFunction, List<Statement> block) {
         Token curr = this.getCurrToken();
+        if (curr.isLiteral()) {
 
-        while (curr.type != TokenType.RIGHT_P) {
-            Token argName = curr;
-            if (!targetFunction.args.containsKey(argName)) {
-                Interpreter.error(argName.lineNumber, "Invalid argument name " + argName.lexeme);
-            }
-            checkType(TokenType.EQUAL, "Missing equal sign after argName");
-
+        } else {
 
         }
+
 
     }
 
@@ -421,4 +412,5 @@ public class Parser {
         }
         return left;
     }
+
 }
