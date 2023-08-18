@@ -117,11 +117,14 @@ abstract class Statement {
     }
     static class functionDef extends Statement {
         Token name;
-        HashMap<Token, Object> args;
+        HashMap<Pair, Object> args;
+        HashMap<String, Integer> nameToArgIndex;
+        HashMap<Integer, Object> argIndexToDefault;
         List<Statement> funcBody;
-        functionDef(Token name, HashMap<Token, Object> args, List<Statement> funcBody) {
+        functionDef(Token name, HashMap<String, Integer> nameToArgIndex, HashMap<Integer, Object> argIndexToDefault, List<Statement> funcBody) {
             this.name = name;
-            this.args = args;
+            this.nameToArgIndex = nameToArgIndex;
+            this.argIndexToDefault = argIndexToDefault;
             this.funcBody = funcBody;
         }
 

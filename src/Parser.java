@@ -10,7 +10,7 @@ public class Parser {
 //    This hashmap has the following format Map<key = Token funcName, val = Statement.functionDef>
 //    When the parser finds a function, it will store them here. When the parser finds a function call to the functions,
 //    it will use this hashmap to resolve default arguments and send the full argument list to the evaluator
-    HashMap<Token, Statement.functionDef> functions = new HashMap<>();
+    HashMap<String, Statement.functionDef> functions = new HashMap<>();
     List<Pair> addToBlock = new ArrayList<>();
     List<Pair> addToStatements = new ArrayList<>();
     List<Statement> statements = new ArrayList<>();
@@ -93,9 +93,10 @@ public class Parser {
         } else if (curr.type == TokenType.DEF) {
             this.currToken++;
             checkType(TokenType.IDENTIFIER, "Please add a function name after 'def' keyword");
-            Token name = this.tokens.get(this.currToken -1 );
+            Token name = this.tokens.get(this.currToken - 1);
             checkType(TokenType.LEFT_P, "Missing '(' after function name");
-            HashMap<Pair, Object> args = new HashMap<>();
+            HashMap<String, Integer> nameToArgIndex = new HashMap<>();
+            HashMap<Integer, Object> argIndexToDefault = new HashMap<>();
             int argNum = 0;
             if (getCurrToken().type != TokenType.RIGHT_P) {
                 checkType(TokenType.IDENTIFIER, "Missing argument identifier");
@@ -111,7 +112,8 @@ public class Parser {
                     }
                     defaultArg = primary(block);
                 }
-                args.put(new Pair(variable, argNum++), defaultArg);
+                nameToArgIndex.put(variable.lexeme, argNum);
+                argIndexToDefault.put(argNum++, defaultArg);
                 while (getCurrToken().type == TokenType.COMMA) {
                     this.currToken++;
                     checkType(TokenType.IDENTIFIER, "Missing argument identifier");
@@ -124,14 +126,15 @@ public class Parser {
                         }
                         defaultArg2 = primary(block);
                     }
-                    args.put(new Pair(var2, argNum++), defaultArg2);
+                    nameToArgIndex.put(var2.lexeme, argNum);
+                    argIndexToDefault.put(argNum++, defaultArg2);
                 }
             }
             checkType(TokenType.RIGHT_P, "Missing ')' after listing arguments");
             checkType(TokenType.LEFT_B, "Missing '{' after function is declared");
             List<Statement> funcBody = block();
-            Statement funcDef = new Statement.functionDef(name, args, funcBody);
-            this.functions.put(name, (Statement.functionDef) funcDef);
+            Statement funcDef = new Statement.functionDef(name, nameToArgIndex, argIndexToDefault, funcBody);
+            this.functions.put(name.lexeme, (Statement.functionDef) funcDef);
             return funcDef;
         } else if (curr.type == TokenType.RETURN) {
             int lineNum = getCurrToken().lineNumber;
@@ -278,10 +281,12 @@ public class Parser {
         while (getCurrToken().type == TokenType.LEFT_P) {
             this.currToken++;
             int numArgs = countArgs();
-            args = new ArrayList<>();
+
             Token funcName = ((Expr.Variable) left).varName;
-            Statement.functionDef targetFunction = this.functions.get(funcName);
-            if (numArgs > targetFunction.args.size()) {
+            boolean checker = this.functions.containsKey(funcName.lexeme);
+            Statement.functionDef targetFunction = this.functions.get(funcName.lexeme);
+            args = new ArrayList<>();
+            if (numArgs > targetFunction.argIndexToDefault.size()) {
                 Interpreter.error(funcName.lineNumber, "Too many arguments");
             } else {
                 handleArgs(args, targetFunction, block);
@@ -297,12 +302,28 @@ public class Parser {
 
     private void handleArgs(List<Expr> args, Statement.functionDef targetFunction, List<Statement> block) {
         Token curr = this.getCurrToken();
-        if (curr.isLiteral()) {
-
-        } else {
-
+        int argNum = 0;
+        HashMap<String, Integer> nameToIndex = targetFunction.nameToArgIndex;
+        HashMap<Integer, Object> indexToDefault = targetFunction.argIndexToDefault;
+        for (int i = 0; i < indexToDefault.size(); i++) {
+            args.add(null);
         }
-
+        do {
+            Expr arg = expression(block);
+            if (arg instanceof Expr.Assignment) {
+                Token argName = ((Expr.Assignment) arg).variable;
+                int argIndex = nameToIndex.get(argName.lexeme);
+                args.set(argIndex, ((Expr.Assignment) arg).value);
+            } else {
+                args.set(argNum++, arg);
+            }
+        } while (this.tokens.get(this.currToken++).type == TokenType.COMMA);
+        this.currToken--;
+        for (int i = 0; i < args.size(); i++) {
+            if (args.get(i) == null) {
+                args.set(i, (Expr) indexToDefault.get(i));
+            }
+        }
 
     }
 
