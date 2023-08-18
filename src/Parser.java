@@ -274,11 +274,11 @@ public class Parser {
     private Expr call(List<Statement> block) {
         Expr left = primary(block);
 
-        HashMap<Expr, Object> args = null;
+        List<Expr> args = null;
         while (getCurrToken().type == TokenType.LEFT_P) {
             this.currToken++;
             int numArgs = countArgs();
-            args = new HashMap<>();
+            args = new ArrayList<>();
             Token funcName = ((Expr.Variable) left).varName;
             Statement.functionDef targetFunction = this.functions.get(funcName);
             if (numArgs > targetFunction.args.size()) {
@@ -295,7 +295,7 @@ public class Parser {
 
     }
 
-    private void handleArgs(HashMap<Expr, Object> args, Statement.functionDef targetFunction, List<Statement> block) {
+    private void handleArgs(List<Expr> args, Statement.functionDef targetFunction, List<Statement> block) {
         Token curr = this.getCurrToken();
         if (curr.isLiteral()) {
 
