@@ -9,5 +9,8 @@ class Token {
         this.literal = literal;
         this.lineNumber = lineNumber;
     }
+    public boolean isLiteral() {
+        return (type == TokenType.NULL || type == TokenType.NUM || type == TokenType.STRING || type == TokenType.TRUE || type == TokenType.FALSE);
+    }
 
 }
