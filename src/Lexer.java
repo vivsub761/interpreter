@@ -57,6 +57,10 @@ public class Lexer {
             case '}': addToken(TokenType.RIGHT_B, "}", null); break;
             case ';': addToken(TokenType.SEMICOLON, ";", null); break;
             case '*': addToken(TokenType.STAR, "*", null); break;
+            case '[': addToken(TokenType.LEFT_S, "[", null); break;
+            case ']': addToken(TokenType.RIGHT_S, "]", null);
+
+
 
 
             //Multi-char tokens
