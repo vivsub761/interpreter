@@ -145,6 +145,9 @@ public class Parser {
             }
             semicolonCheck();
             return new Statement.Return(lineNum, returnVal);
+        } else if (curr.type == TokenType.LEFT_S) {
+            this.currToken++;
+
         } else {
             Expr expr = assignment(block);
             semicolonCheck();
