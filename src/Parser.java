@@ -145,9 +145,6 @@ public class Parser {
             }
             semicolonCheck();
             return new Statement.Return(lineNum, returnVal);
-        } else if (curr.type == TokenType.LEFT_S) {
-            this.currToken++;
-
         } else {
             Expr expr = assignment(block);
             semicolonCheck();
@@ -281,7 +278,7 @@ public class Parser {
         Expr left = primary(block);
 
         List<Expr> args = null;
-        while (getCurrToken().type == TokenType.LEFT_P) {
+        while (this.currToken < this.tokens.size() && getCurrToken().type == TokenType.LEFT_P) {
             this.currToken++;
             int numArgs = countArgs();
 
@@ -380,6 +377,15 @@ public class Parser {
                         block.add(desugaredStatement);
                     }
                     return new Expr.Variable(this.tokens.get(this.currToken++));
+                } else if (curr.type == TokenType.LEFT_S) {
+                    this.currToken++;
+                    ArrayList<Expr> contents = new ArrayList<>();
+                    do {
+                        contents.add(assignment(block));
+                    } while (this.tokens.get(this.currToken++).type == TokenType.COMMA);
+                    this.currToken--;
+                    checkType(TokenType.RIGHT_S, "Array never terminated");
+                    return new Expr.Array(contents);
                 }
         }
         return null;
@@ -417,7 +423,7 @@ public class Parser {
 
     private Expr or(List<Statement> block) {
         Expr left = and(block);
-        while (getCurrToken().type == TokenType.OR) {
+        while (this.currToken < tokens.size() && getCurrToken().type == TokenType.OR) {
             Token operator = getCurrToken();
             this.currToken++;
             Expr right = equality(block);
@@ -428,6 +434,9 @@ public class Parser {
 
     private Expr and(List<Statement> block) {
         Expr left = equality(block);
+        if (this.currToken == tokens.size()) {
+            return left;
+        }
         while (getCurrToken().type == TokenType.AND) {
             Token operator = getCurrToken();
             this.currToken++;
