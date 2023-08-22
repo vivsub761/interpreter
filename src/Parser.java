@@ -283,7 +283,6 @@ public class Parser {
             int numArgs = countArgs();
 
             Token funcName = ((Expr.Variable) left).varName;
-            boolean checker = this.functions.containsKey(funcName.lexeme);
             Statement.functionDef targetFunction = this.functions.get(funcName.lexeme);
             args = new ArrayList<>();
             if (numArgs > targetFunction.argIndexToDefault.size()) {
@@ -434,9 +433,6 @@ public class Parser {
 
     private Expr and(List<Statement> block) {
         Expr left = equality(block);
-        if (this.currToken == tokens.size()) {
-            return left;
-        }
         while (getCurrToken().type == TokenType.AND) {
             Token operator = getCurrToken();
             this.currToken++;
