@@ -26,6 +26,8 @@ public class Lexer {
         keywordMap.put("var",    TokenType.VAR);
         keywordMap.put("while",  TokenType.WHILE);
         keywordMap.put("elif", TokenType.ELIF);
+        keywordMap.put("break", TokenType.BREAK);
+        keywordMap.put("continue", TokenType.CONTINUE);
     }
 
     Lexer(String fileData) {
@@ -47,7 +49,11 @@ public class Lexer {
     }
 
     private void addNextToken() {
+        if (checkWord("break") || checkWord("continue")) {
+            return;
+        }
         switch(this.fileData.charAt(this.curr++)) {
+
             //Single character tokens: ( ) , . { } + - * ;
             case '(': addToken(TokenType.LEFT_P, "(", null); break;
             case ')': addToken(TokenType.RIGHT_P, ")", null); break;
@@ -59,8 +65,6 @@ public class Lexer {
             case '*': addToken(TokenType.STAR, "*", null); break;
             case '[': addToken(TokenType.LEFT_S, "[", null); break;
             case ']': addToken(TokenType.RIGHT_S, "]", null); break;
-
-
 
 
             //Multi-char tokens
@@ -216,5 +220,14 @@ public class Lexer {
             addToken(TokenType.IDENTIFIER, s, null);
         }
 
+    }
+
+    private boolean checkWord(String word) {
+        if (this.fileData.substring(this.curr, this.curr + word.length()) == word && keywordMap.containsKey(word)) {
+            this.curr += word.length();
+            addToken(keywordMap.get(word), word, null);
+            return true;
+        }
+        return false;
     }
 }
