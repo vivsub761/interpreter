@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -11,6 +12,7 @@ abstract class Expr {
         R visitAssignment(Assignment assignment);
         R visitLogical(Logical logical);
         R visitCall(Call call);
+        R visitArray(Array array);
     }
     abstract <R> R accept(ExprVisitor<R> visitor);
     static class Binary extends Expr {
@@ -123,6 +125,18 @@ abstract class Expr {
         @Override
         <R> R accept(ExprVisitor<R> visitor) {
             return visitor.visitCall(this);
+        }
+    }
+
+    static class Array extends Expr {
+        final ArrayList<Expr> arrayContents;
+
+        Array(ArrayList<Expr> arrayContents) {
+            this.arrayContents = arrayContents;
+        }
+        @Override
+        <R> R accept(ExprVisitor<R> visitor) {
+            return visitor.visitArray(this);
         }
     }
 
