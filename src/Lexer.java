@@ -223,7 +223,7 @@ public class Lexer {
     }
 
     private boolean checkWord(String word) {
-        if (this.fileData.substring(this.curr, this.curr + word.length()) == word && keywordMap.containsKey(word)) {
+        if (this.curr + word.length() < this.fileData.length() && this.fileData.substring(this.curr, this.curr + word.length()) == word && keywordMap.containsKey(word)) {
             this.curr += word.length();
             addToken(keywordMap.get(word), word, null);
             return true;
