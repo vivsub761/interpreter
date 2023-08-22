@@ -9,6 +9,12 @@ public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVis
     public Object visitLiteral(Expr.Literal expr) {
         return expr.value;
     }
+
+    @Override
+    public Object visitArray(Expr.Array array) {
+        return array.arrayContents;
+    }
+
     @Override
     public Object visitUnary(Expr.Unary expr) {
         Object right = eval(expr.right);
