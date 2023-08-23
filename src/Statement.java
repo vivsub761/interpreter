@@ -127,7 +127,6 @@ abstract class Statement {
             this.argIndexToDefault = argIndexToDefault;
             this.funcBody = funcBody;
         }
-
         @Override
         <R> R accept(Statement.StatementVisitor<R> visitor) {
             return visitor.visitFunction(this);

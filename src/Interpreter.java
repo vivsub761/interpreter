@@ -23,11 +23,6 @@ public class Interpreter {
         List<Statement> statements = parser.parse();
         Evaluator evaluator = new Evaluator();
         evaluator.evaluate(statements);
-//        for (Token token: tokens) {
-//            System.out.println(token.type);
-//        }
-
-//        System.out.println(new AstPrinter().print(expression));
     }
     public static void error(int lineNumber, String errorMessage) {
         System.out.println("Error in line " + Integer.toString(lineNumber) + ": " + errorMessage);
