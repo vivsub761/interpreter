@@ -129,9 +129,9 @@ abstract class Expr {
     }
 
     static class Array extends Expr {
-        final ArrayList<Expr> arrayContents;
+        final ArrayList<Object> arrayContents;
 
-        Array(ArrayList<Expr> arrayContents) {
+        Array(ArrayList<Object> arrayContents) {
             this.arrayContents = arrayContents;
         }
         @Override
