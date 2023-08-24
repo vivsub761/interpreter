@@ -13,7 +13,7 @@ public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVis
     @Override
     public Object visitArray(Expr.Array array) {
         for (int i = 0; i < array.arrayContents.size(); i++) {
-            array.arrayContents.set(i, eval(array.arrayContents.get(i)));
+            array.arrayContents.set(i, eval((Expr) array.arrayContents.get(i)));
         }
         return array.arrayContents;
     }
@@ -193,7 +193,6 @@ public class Evaluator implements Statement.StatementVisitor<Void>, Expr.ExprVis
         for (Statement statement: statements) {
             execute(statement);
         }
-//        System.out.println(value.toString());
     }
 
     void executeBlock(List<Statement> block, Environment environment) {
