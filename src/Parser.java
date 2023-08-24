@@ -378,7 +378,7 @@ public class Parser {
                     return new Expr.Variable(this.tokens.get(this.currToken++));
                 } else if (curr.type == TokenType.LEFT_S) {
                     this.currToken++;
-                    ArrayList<Expr> contents = new ArrayList<>();
+                    ArrayList<Object> contents = new ArrayList<>();
                     do {
                         contents.add(assignment(block));
                     } while (this.tokens.get(this.currToken++).type == TokenType.COMMA);
