@@ -16,6 +16,7 @@ abstract class Statement {
         R visitReturn(Return returnStatement);
         R visitBreak(Break breakStatement);
 
+        R visitContinue(Continue continueStatement);
     }
     abstract <R> R accept(Statement.StatementVisitor<R> visitor);
     static class Expression extends Statement {
@@ -157,6 +158,18 @@ abstract class Statement {
         @Override
         <R> R accept(Statement.StatementVisitor<R> visitor) {
             return visitor.visitBreak(this);
+        }
+
+    }
+
+    static class Continue extends Statement {
+
+        Continue() {
+
+        }
+        @Override
+        <R> R accept(Statement.StatementVisitor<R> visitor) {
+            return visitor.visitContinue(this);
         }
 
     }
