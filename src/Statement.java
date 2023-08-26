@@ -14,6 +14,8 @@ abstract class Statement {
         R visitForStatement(ForStatement statement);
         R visitFunction(functionDef function);
         R visitReturn(Return returnStatement);
+        R visitBreak(Break breakStatement);
+
     }
     abstract <R> R accept(Statement.StatementVisitor<R> visitor);
     static class Expression extends Statement {
@@ -145,5 +147,17 @@ abstract class Statement {
         <R> R accept(Statement.StatementVisitor<R> visitor) {
             return visitor.visitReturn(this);
         }
+    }
+
+    static class Break extends Statement {
+
+        Break() {
+
+        }
+        @Override
+        <R> R accept(Statement.StatementVisitor<R> visitor) {
+            return visitor.visitBreak(this);
+        }
+
     }
 }
