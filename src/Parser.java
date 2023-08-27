@@ -31,15 +31,14 @@ public class Parser {
     }
     Statement getNextStatement(List<Statement> block) {
         Token curr = getCurrToken();
+        this.currToken++;
         if (curr.type == TokenType.PRINT) {
-            this.currToken++;
             checkType(TokenType.LEFT_P, "Missing '(' after print");
             Expr expr = expression(block);
             checkType(TokenType.RIGHT_P, "Missing ')' after print");
             semicolonCheck();
             return new Statement.Print(expr);
         } else if (curr.type == TokenType.VAR){
-            this.currToken++;
             Token next = getCurrToken();
             if (next.type != TokenType.IDENTIFIER) {
                 Interpreter.error(next.lineNumber, "Expect variable name after var keyword");
@@ -55,10 +54,8 @@ public class Parser {
             semicolonCheck();
             return new Statement.StatementVar(name, initialVal);
         } else if (curr.type == TokenType.LEFT_B){
-            this.currToken++;
             return new Statement.EnvBlock(block());
         } else if (curr.type == TokenType.IF) {
-            this.currToken++;
             checkType(TokenType.LEFT_P, "Missing '(' after if");
             Expr condition = expression(block);
             checkType(TokenType.RIGHT_P, "Missing ')' after condition");
@@ -71,7 +68,6 @@ public class Parser {
             return new Statement.ifStatement(condition, ifCondTrue, null);
 
         } else if (curr.type == TokenType.WHILE) {
-            this.currToken++;
             checkType(TokenType.LEFT_P, "Missing ( after 'while'");
             Expr condition = expression(block);
             checkType(TokenType.RIGHT_P, "Missing ')' after while loop condition");
@@ -79,7 +75,6 @@ public class Parser {
             return new Statement.WhileStatement(condition, whileCode);
 
         } else if (curr.type == TokenType.FOR) {
-            this.currToken++;
             checkType(TokenType.LEFT_P, "Missing '(' after for loop declaration");
             // this is a var declaration
             Statement initialize = getNextStatement(null);
@@ -91,7 +86,6 @@ public class Parser {
             Statement forBlock = getNextStatement(null);
             return new Statement.ForStatement(condition, forBlock, initialize, incrementation);
         } else if (curr.type == TokenType.DEF) {
-            this.currToken++;
             checkType(TokenType.IDENTIFIER, "Please add a function name after 'def' keyword");
             Token name = this.tokens.get(this.currToken - 1);
             checkType(TokenType.LEFT_P, "Missing '(' after function name");
@@ -137,8 +131,7 @@ public class Parser {
             this.functions.put(name.lexeme, (Statement.functionDef) funcDef);
             return funcDef;
         } else if (curr.type == TokenType.RETURN) {
-            int lineNum = getCurrToken().lineNumber;
-            this.currToken++;
+            int lineNum = curr.lineNumber;
             Expr returnVal = null;
             if (getCurrToken().type != TokenType.SEMICOLON) {
                 returnVal = expression(block);
@@ -146,6 +139,7 @@ public class Parser {
             semicolonCheck();
             return new Statement.Return(lineNum, returnVal);
         } else {
+            this.currToken--;
             Expr expr = assignment(block);
             semicolonCheck();
             return new Statement.Expression(expr);
