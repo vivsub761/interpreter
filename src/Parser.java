@@ -141,7 +141,10 @@ public class Parser {
         } else if (curr.type == TokenType.BREAK) {
             semicolonCheck();
             return new Statement.Break();
-        } else {
+        } else if (curr.type == TokenType.CONTINUE) {
+            semicolonCheck();
+            return new Statement.Continue();
+        }else {
             this.currToken--;
             Expr expr = assignment(block);
             semicolonCheck();
