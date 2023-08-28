@@ -138,6 +138,9 @@ public class Parser {
             }
             semicolonCheck();
             return new Statement.Return(lineNum, returnVal);
+        } else if (curr.type == TokenType.BREAK) {
+            semicolonCheck();
+            return new Statement.Break();
         } else {
             this.currToken--;
             Expr expr = assignment(block);
